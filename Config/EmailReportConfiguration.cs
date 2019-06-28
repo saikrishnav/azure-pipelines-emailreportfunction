@@ -26,5 +26,7 @@ namespace EmailReportFunction.Config
         public string EmailSubject { get; set; }
 
         public SmtpConfiguration SmtpConfiguration { get; set; }
+
+        public string ProjectId { get; set; }
     }
 }

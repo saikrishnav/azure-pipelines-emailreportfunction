@@ -1,4 +1,5 @@
 ﻿using EmailReportFunction.Config;
+using EmailReportFunction.Config.Pipeline;
 using EmailReportFunction.DataProviders;
 using EmailReportFunction.Wrappers.Microsoft.EmailTask.EmailReport.Wrappers;
 using Microsoft.Extensions.Logging;
@@ -10,6 +11,6 @@ namespace EmailReportFunction.Wrappers
     {
         IMailSender GetMailSender(ILogger logger);
 
-        IDataProvider GetDataProvider(string jsonRequest, ILogger logger);
+        IDataProvider<IPipelineData> GetPipelineDataProvider(string jsonRequest, ILogger logger);
     }
 }

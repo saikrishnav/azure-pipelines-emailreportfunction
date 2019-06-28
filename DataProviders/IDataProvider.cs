@@ -8,8 +8,8 @@ namespace EmailReportFunction.DataProviders
     /// <summary>
     /// Data Providers provide data to fill the report
     /// </summary>
-    public interface IDataProvider
+    public interface IDataProvider<T>
     {
-        Task<IPipelineData> GetPipelineData();
+        Task<T> GetDataAsync();
     }
 }

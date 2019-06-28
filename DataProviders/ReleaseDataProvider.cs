@@ -11,13 +11,19 @@ using EmailReportFunction.Wrappers;
 using Microsoft.VisualStudio.Services.ReleaseManagement.WebApi.Exceptions;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Services.ReleaseManagement.WebApi.Contracts;
+using Microsoft.VisualStudio.Services.Identity;
+using Microsoft.VisualStudio.Services.WebApi;
 
 namespace EmailReportFunction.DataProviders
 {
     public class ReleaseDataProvider : IReleaseDataProvider
     {
-        public ReleaseDataProvider(ReleaseConfiguration pipelineConfiguration, IReleaseHttpClientWrapper releaseHttpClient, ILogger logger)
+        public ReleaseDataProvider(ReleaseConfiguration pipelineConfiguration, 
+            IReleaseHttpClientWrapper releaseHttpClient, 
+            IDataProvider<List<IdentityRef>> failedTestOwnersDataProvider,
+            ILogger logger)
         {
+            _failedTestOwnersDataProvider = failedTestOwnersDataProvider;
             _releaseConfiguration = pipelineConfiguration;
             _releaseHttpClient = releaseHttpClient;
             _logger = logger;
@@ -25,12 +31,13 @@ namespace EmailReportFunction.DataProviders
 
         private ReleaseConfiguration _releaseConfiguration;
         private IReleaseHttpClientWrapper _releaseHttpClient;
+        private IDataProvider<List<IdentityRef>> _failedTestOwnersDataProvider;
         private ILogger _logger;
 
 
         #region IDataProvider
 
-        public async Task<IPipelineData> GetPipelineData()
+        public async Task<IPipelineData> GetDataAsync()
         {
             using (new PerformanceMeasurementBlock("ReleaseDataProvider", _logger))
             {
@@ -43,7 +50,7 @@ namespace EmailReportFunction.DataProviders
 
                 release.Properties.Add(ReleaseData.ReleaseEnvironmentIdString, _releaseConfiguration.EnvironmentId);
                 release.Properties.Add(ReleaseData.UsePrevReleaseEnvironmentString, _releaseConfiguration.UsePreviousEnvironment);
-                var releaseData = new ReleaseData(release, this);
+                var releaseData = new ReleaseData(release, this, _failedTestOwnersDataProvider);
 
                 _logger.LogInformation("ReleaseDataProvider: Fetched release data");
                 return releaseData;

@@ -19,14 +19,16 @@ namespace EmailReportFunction.Config.Pipeline
         public const string ReleaseEnvironmentIdString = "ReleaseEnvironmentId";
         public const string UsePrevReleaseEnvironmentString = "UsePrevReleaseEnvironment";
 
-        public ReleaseData(Release release, IReleaseDataProvider dataProvider)
+        public ReleaseData(Release release, IReleaseDataProvider dataProvider, IDataProvider<List<IdentityRef>> failedTestOwnersDataProvider)
         {
             _release = release;
             _dataProvider = dataProvider;
+            _failedTestOwnersDataProvider = failedTestOwnersDataProvider;
         }
 
         private Release _release;
         private IReleaseDataProvider _dataProvider;
+        private IDataProvider<List<IdentityRef>> _failedTestOwnersDataProvider;
         private ReleaseEnvironment _releaseEnvironment;
 
         private Release _lastCompletedRelease;
@@ -71,6 +73,11 @@ namespace EmailReportFunction.Config.Pipeline
         public async Task<List<PhaseData>> GetPhasesAsync()
         {
             return await _dataProvider.GetPhases(this.Environment);
+        }
+
+        public async Task<List<IdentityRef>> GetFailedTestOwnersAsync()
+        {
+            return await _failedTestOwnersDataProvider.GetDataAsync();
         }
 
         #endregion

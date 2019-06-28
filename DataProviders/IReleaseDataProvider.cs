@@ -10,7 +10,7 @@ namespace EmailReportFunction.DataProviders
     /// <summary>
     /// Data Providers provide data to fill the report
     /// </summary>
-    public interface IReleaseDataProvider : IDataProvider
+    public interface IReleaseDataProvider : IDataProvider<IPipelineData>
     {
         Task<List<ChangeData>> GetAssociatedChanges(Release lastCompletedRelease);
 

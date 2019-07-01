@@ -1,9 +1,9 @@
 ﻿using System.Runtime.Serialization;
-using Microsoft.EmailTask.EmailReport.Config;
-using Microsoft.EmailTask.EmailReport.Utils;
+using EmailReportFunction.Config;
+using EmailReportFunction.ViewModel.Helpers;
 using Microsoft.TeamFoundation.TestManagement.WebApi;
 
-namespace Microsoft.EmailTask.EmailReport.ViewModel
+namespace EmailReportFunction.ViewModel
 {
     [DataContract]
     public class BuildReferenceViewModel
@@ -37,14 +37,14 @@ namespace Microsoft.EmailTask.EmailReport.ViewModel
             DefinitionName = definitionName;
         }
 
-        public BuildReferenceViewModel(BaseConfiguration config, BuildReference buildReference)
+        public BuildReferenceViewModel(PipelineConfiguration config, BuildReference buildReference)
             : this(buildReference.Id,
                   buildReference.Number,
                   LinkHelper.GetBuildSummaryLink(buildReference.Id.ToString(), config))
         {
         }
 
-        public BuildReferenceViewModel(BaseConfiguration config, TeamFoundation.Build.WebApi.Build build)
+        public BuildReferenceViewModel(PipelineConfiguration config, Microsoft.TeamFoundation.Build.WebApi.Build build)
             : this(build.Id, 
                   build.BuildNumber, 
                   LinkHelper.GetBuildSummaryLink(build.Id.ToString(), config), 

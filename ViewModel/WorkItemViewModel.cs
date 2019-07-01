@@ -1,11 +1,12 @@
 ﻿using System.Runtime.Serialization;
-using Microsoft.EmailTask.EmailReport.Config;
-using Microsoft.EmailTask.EmailReport.Utils;
-using Microsoft.TeamFoundation.WorkItemTracking.Common;
+using EmailReportFunction.Config;
+using EmailReportFunction.Config.WIT;
+using EmailReportFunction.Utils;
+using EmailReportFunction.ViewModel.Helpers;
 using Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models;
 using Microsoft.VisualStudio.Services.WebApi;
 
-namespace Microsoft.EmailTask.EmailReport.ViewModel
+namespace EmailReportFunction.ViewModel
 {
     [DataContract]
     public class WorkItemViewModel
@@ -32,7 +33,7 @@ namespace Microsoft.EmailTask.EmailReport.ViewModel
         {
         }
 
-        public WorkItemViewModel(BaseConfiguration config, WorkItem workItem)
+        public WorkItemViewModel(PipelineConfiguration config, WorkItem workItem)
         {
             if (workItem.Id.HasValue)
             {

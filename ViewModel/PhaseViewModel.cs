@@ -1,11 +1,10 @@
-﻿using Microsoft.EmailTask.EmailReport.ViewModel.Helpers;
-using Microsoft.TeamFoundation.Tasks.Common.Utils;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-using Microsoft.EmailTask.EmailReport.Dto;
+using EmailReportFunction.Config.Pipeline;
+using EmailReportFunction.ViewModel.Helpers;
 
-namespace Microsoft.EmailTask.EmailReport.ViewModel
+namespace EmailReportFunction.ViewModel
 {
     [DataContract]
     public class PhaseViewModel
@@ -30,7 +29,7 @@ namespace Microsoft.EmailTask.EmailReport.ViewModel
 
         }
 
-        public PhaseViewModel(PhaseDto phase)
+        public PhaseViewModel(PhaseData phase)
         {
             Status = phase.Status;
             Rank = phase.Rank;
@@ -38,9 +37,9 @@ namespace Microsoft.EmailTask.EmailReport.ViewModel
             InitializeDeploymentJobs(phase);
         }
 
-        private void InitializeDeploymentJobs(PhaseDto phase)
+        private void InitializeDeploymentJobs(PhaseData phase)
         {
-            IList<JobDto> deploymentJobs = phase.Jobs;
+            IList<JobData> deploymentJobs = phase.Jobs;
 
             if (deploymentJobs.Any())
             {
@@ -50,7 +49,7 @@ namespace Microsoft.EmailTask.EmailReport.ViewModel
             else
             {
                 // This can happen if we have an empty phase or a phase with only disabled steps
-                Log.LogWarning($"No deployment jobs found in phase {Name}");
+                // TODO- Log.LogWarning($"No deployment jobs found in phase {Name}");
             }
         }
 

@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 using Microsoft.VisualStudio.Services.ReleaseManagement.WebApi;
 using System.Linq;
 
-namespace Microsoft.EmailTask.EmailReport.ViewModel
+namespace EmailReportFunction.ViewModel
 {
     [DataContract]
     public class ReleaseEnvironmentViewModel

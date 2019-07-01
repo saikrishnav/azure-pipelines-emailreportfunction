@@ -1,6 +1,6 @@
 ﻿using System.Runtime.Serialization;
 
-namespace Microsoft.EmailTask.EmailReport.ViewModel
+namespace EmailReportFunction.ViewModel
 {
     [DataContract]
     public class TaskIssueViewModel

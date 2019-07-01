@@ -1,14 +1,11 @@
 ﻿using EmailReportFunction.Config.TestResults;
 using EmailReportFunction.DataProviders;
 using EmailReportFunction.Exceptions;
-using Microsoft.TeamFoundation.TestManagement.WebApi;
 using Microsoft.VisualStudio.Services.ReleaseManagement.WebApi;
-using Microsoft.VisualStudio.Services.ReleaseManagement.WebApi.Contracts;
 using Microsoft.VisualStudio.Services.WebApi;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -19,23 +16,30 @@ namespace EmailReportFunction.Config.Pipeline
         public const string ReleaseEnvironmentIdString = "ReleaseEnvironmentId";
         public const string UsePrevReleaseEnvironmentString = "UsePrevReleaseEnvironment";
 
-        public ReleaseData(Release release, IReleaseDataProvider dataProvider, IDataProvider<List<IdentityRef>> failedTestOwnersDataProvider)
+        public ReleaseData(Release release, IReleaseDataProvider dataProvider, 
+            IDataProvider<List<IdentityRef>> failedTestOwnersDataProvider,
+            IDataProvider<IEnumerable<TestResultsGroupData>> testResultsDataProvider)
         {
             _release = release;
             _dataProvider = dataProvider;
             _failedTestOwnersDataProvider = failedTestOwnersDataProvider;
+            _testResultsDataProvider = testResultsDataProvider;
         }
 
         private Release _release;
         private IReleaseDataProvider _dataProvider;
         private IDataProvider<List<IdentityRef>> _failedTestOwnersDataProvider;
+        private IDataProvider<IEnumerable<TestResultsGroupData>> _testResultsDataProvider;
         private ReleaseEnvironment _releaseEnvironment;
 
         private Release _lastCompletedRelease;
 
         #region Public methods 
 
-        public IList<Artifact> Artifacts => this._release.Artifacts;
+        public Release Release => this._release;
+
+        public IdentityRef CreatedBy => _release.CreatedBy;
+
 
         public ReleaseEnvironment Environment
         {
@@ -78,6 +82,11 @@ namespace EmailReportFunction.Config.Pipeline
         public async Task<List<IdentityRef>> GetFailedTestOwnersAsync()
         {
             return await _failedTestOwnersDataProvider.GetDataAsync();
+        }
+
+        public async Task<IEnumerable<TestResultsGroupData>> GetFilteredTestsAsync()
+        {
+            return await _testResultsDataProvider.GetDataAsync();
         }
 
         #endregion

@@ -1,11 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.Serialization;
-using Microsoft.EmailTask.EmailReport.Config;
-using Microsoft.EmailTask.EmailReport.Constants;
-using Microsoft.EmailTask.EmailReport.Dto;
-using Microsoft.EmailTask.EmailReport.ViewModel.Helpers;
+using EmailReportFunction.Config;
+using EmailReportFunction.Config.TestResults;
+using EmailReportFunction.ViewModel.Helpers;
 
-namespace Microsoft.EmailTask.EmailReport.ViewModel
+namespace EmailReportFunction.ViewModel
 {
     [DataContract]
     public class TestSummaryItemViewModel : TestResultSummaryViewModel
@@ -16,24 +15,24 @@ namespace Microsoft.EmailTask.EmailReport.ViewModel
         [DataMember]
         public List<TestInfoByPriorityViewModel> TestsByPriority { get; set; }
 
-        public TestSummaryItemViewModel(GroupTestResultsBy groupedBy, TestSummaryItemDto summaryItemDto, BaseConfiguration config, bool includeOthersInTotal) :
-            base( summaryItemDto, config, includeOthersInTotal)
+        public TestSummaryItemViewModel(TestResultsGroupingType groupedBy, TestSummaryItem summaryItem, PipelineConfiguration config, bool includeOthersInTotal) :
+            base(summaryItem, config, includeOthersInTotal)
         {
-            Name = (groupedBy == GroupTestResultsBy.Priority) ? 
-                PriorityDisplayNameHelper.GetDisplayName(summaryItemDto.Name) : 
-                summaryItemDto.Name;
+            Name = (groupedBy == TestResultsGroupingType.Priority) ? 
+                PriorityDisplayNameHelper.GetDisplayName(summaryItem.Name) :
+                summaryItem.Name;
 
-            SetupPriorityData(summaryItemDto, includeOthersInTotal);
+            SetupPriorityData(summaryItem, includeOthersInTotal);
         }
 
         #region Helpers
 
-        private void SetupPriorityData(TestSummaryItemDto summaryItemDto, bool includeOthersInTotal)
+        private void SetupPriorityData(TestSummaryItem summaryItem, bool includeOthersInTotal)
         {
             TestsByPriority = new List<TestInfoByPriorityViewModel>();
 
             Dictionary<int, Dictionary<TestOutcomeForPriority, int>> testCountForOutcomeByPriority =
-                summaryItemDto.TestCountForOutcomeByPriority;
+                summaryItem.TestCountForOutcomeByPriority;
 
             foreach (var priority in testCountForOutcomeByPriority.Keys)
             {

@@ -1,12 +1,11 @@
 ﻿using EmailReportFunction.Config;
-using EmailReportFunction.Config.Pipeline;
-using Microsoft.Extensions.Logging;
+using System.Net.Mail;
 using System.Threading.Tasks;
 
 namespace EmailReportFunction.Wrappers
 {
     public interface IMailSender
     {
-        Task<bool> SendMailAsync(IPipelineData pipelineData);
+        Task<bool> SendMailAsync(MailMessage message);
     }
 }

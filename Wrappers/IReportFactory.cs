@@ -9,8 +9,10 @@ namespace EmailReportFunction.Wrappers
 {
     public interface IReportFactory
     {
-        IMailSender GetMailSender(ILogger logger);
+        IMailSender GetMailSender(string jsonRequest, ILogger logger);
 
         IDataProvider<IPipelineData> GetPipelineDataProvider(string jsonRequest, ILogger logger);
+
+        IReportMessageGenerator GetReportMessageGenerator(string jsonRequest, ILogger log);
     }
 }

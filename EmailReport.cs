@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.Services.Client;
 using Microsoft.VisualStudio.Services.Common;
 using Microsoft.VisualStudio.Services.OAuth;
+using Microsoft.VisualStudio.Services.ReleaseManagement.WebApi;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -28,25 +29,14 @@ namespace EmailReportFunction
 
         public async Task<bool> GenerateAndSendReport(string jsonRequest, ILogger logger)
         {
-            IPipelineData data = await GatherReportDataAsync(jsonRequest, logger);
-            await SendReportEmailAsync(data, logger);
-            return true;
+            var dataProvider = _reportFactory.GetPipelineDataProvider(jsonRequest, logger);
+            var pipelineData = await dataProvider.GetDataAsync();
+
+            var reportGenerator = _reportFactory.GetReportMessageGenerator(jsonRequest, logger);
+            var message = await reportGenerator.GenerateReportAsync(pipelineData);
+
+            var mailSender = _reportFactory.GetMailSender(jsonRequest, logger);
+            return await mailSender.SendMailAsync(message);
         }
-
-        #region Private Methods
-
-        private async Task<IPipelineData> GatherReportDataAsync(string jsonRequest, ILogger log)
-        {
-            var dataProvider = _reportFactory.GetDataProvider(jsonRequest, log);
-            return await dataProvider.GetPipelineData();
-        }
-
-        private async Task<bool> SendReportEmailAsync(IPipelineData data, ILogger logger)
-        {
-            var mailSender = _reportFactory.GetMailSender(logger);
-            return await mailSender.SendMailAsync(data);
-        }
-
-        #endregion
     }
 }

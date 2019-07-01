@@ -1,12 +1,12 @@
 ﻿using System;
-using Microsoft.EmailTask.EmailReport.Config;
-using Microsoft.EmailTask.EmailReport.Dto;
-using Microsoft.EmailTask.EmailReport.Utils;
-using Microsoft.EmailTask.EmailReport.ViewModel.Helpers;
 using Microsoft.TeamFoundation.TestManagement.WebApi;
 using System.Runtime.Serialization;
+using EmailReportFunction.Config.TestResults;
+using EmailReportFunction.ViewModel.Helpers;
+using EmailReportFunction.Config;
+using EmailReportFunction.Utils;
 
-namespace Microsoft.EmailTask.EmailReport.ViewModel
+namespace EmailReportFunction.ViewModel
 {
     [DataContract]
     public class TestResultSummaryViewModel
@@ -32,23 +32,23 @@ namespace Microsoft.EmailTask.EmailReport.ViewModel
         [DataMember]
         public string Url { get; set; }
 
-        public TestResultSummaryViewModel(TestSummaryItemDto summaryItemDto, BaseConfiguration config, bool includeOthersInTotal)
+        public TestResultSummaryViewModel(TestSummaryItem summaryItem, PipelineConfiguration pipelineConfiguration, bool includeOthersInTotal)
         {
-            PassedTests = summaryItemDto.GetPassedTestsCount();
-            FailedTests = summaryItemDto.GetFailedTestsCount();
-            OtherTests = summaryItemDto.GetOtherTestsCount();
+            PassedTests = summaryItem.GetPassedTestsCount();
+            FailedTests = summaryItem.GetFailedTestsCount();
+            OtherTests = summaryItem.GetOtherTestsCount();
 
-            TotalTests = TestResultsHelper.GetTotalTestCountBasedOnUserConfiguration(summaryItemDto.TestCountByOutCome,
+            TotalTests = TestResultsHelper.GetTotalTestCountBasedOnUserConfiguration(summaryItem.TestCountByOutCome,
                 includeOthersInTotal);
 
             PassingRate = TestResultsHelper.GetTestOutcomePercentageString(PassedTests, TotalTests);
 
-            Duration = TimeSpanFormatter.FormatDurationWithUnit(summaryItemDto.Duration);
+            Duration = TimeSpanFormatter.FormatDurationWithUnit(summaryItem.Duration);
 
-            Url = config.GetTestTabLink();       
+            Url = pipelineConfiguration.TestTabLink;       
         }
 
-        public TestResultSummaryViewModel(TestResultSummary summary, BaseConfiguration config, bool includeOthersInTotal)
+        public TestResultSummaryViewModel(TestResultSummary summary, PipelineConfiguration pipelineConfiguration, bool includeOthersInTotal)
         {
             PassedTests = 0;
             FailedTests = 0;
@@ -72,7 +72,7 @@ namespace Microsoft.EmailTask.EmailReport.ViewModel
 
             PassingRate = TestResultsHelper.GetTestOutcomePercentageString(PassedTests, TotalTests);
             Duration = TimeSpanFormatter.FormatDurationWithUnit(summary.AggregatedResultsAnalysis.Duration);
-            Url = config.GetTestTabLink();
+            Url = pipelineConfiguration.TestTabLink;
         }
     }
 }

@@ -1,9 +1,9 @@
 ﻿using System.Runtime.Serialization;
-using Microsoft.EmailTask.EmailReport.Config;
-using Microsoft.EmailTask.EmailReport.Utils;
+using EmailReportFunction.Config;
+using EmailReportFunction.ViewModel.Helpers;
 using Microsoft.VisualStudio.Services.ReleaseManagement.WebApi;
 
-namespace Microsoft.EmailTask.EmailReport.ViewModel
+namespace EmailReportFunction.ViewModel
 {
     [DataContract]
     public class ReleaseViewModel

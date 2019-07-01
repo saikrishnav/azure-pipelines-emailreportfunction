@@ -17,6 +17,8 @@ namespace EmailReportFunction.Config
 
         public bool UsePreviousEnvironment { get; set; }
 
+        public abstract string TestTabLink { get; }
+
         public virtual PipelineConfiguration Clone()
         {
             return (PipelineConfiguration)this.MemberwiseClone();

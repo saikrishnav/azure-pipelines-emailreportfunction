@@ -1,10 +1,10 @@
 ﻿using System.Runtime.Serialization;
-using Microsoft.EmailTask.EmailReport.Config;
-using Microsoft.EmailTask.EmailReport.Constants;
-using Microsoft.EmailTask.EmailReport.Utils;
+using EmailReportFunction.Config;
+using EmailReportFunction.Utils;
+using EmailReportFunction.ViewModel.Helpers;
 using Microsoft.VisualStudio.Services.ReleaseManagement.WebApi.Contracts;
 
-namespace Microsoft.EmailTask.EmailReport.ViewModel
+namespace EmailReportFunction.ViewModel
 {
     [DataContract]
     public class ArtifactViewModel
@@ -27,7 +27,7 @@ namespace Microsoft.EmailTask.EmailReport.ViewModel
         [DataMember]
         public bool IsPrimary { get; set; }
 
-        public ArtifactViewModel(Artifact artifact, BaseConfiguration config)
+        public ArtifactViewModel(Artifact artifact, PipelineConfiguration config)
         {
             Version = GetArtifactInfo(artifact, ArtifactDefinitionConstants.Version);
 

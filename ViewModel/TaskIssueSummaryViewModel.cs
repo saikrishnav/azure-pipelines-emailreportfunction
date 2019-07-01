@@ -1,12 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-using Microsoft.EmailTask.EmailReport.Constants;
-using Microsoft.EmailTask.EmailReport.Dto;
-using Microsoft.EmailTask.EmailReport.Utils;
+using EmailReportFunction.Config.Pipeline;
+using EmailReportFunction.Utils;
 using Microsoft.VisualStudio.Services.ReleaseManagement.WebApi;
 
-namespace Microsoft.EmailTask.EmailReport.ViewModel
+namespace EmailReportFunction.ViewModel
 {
     [DataContract]
     public class TaskIssueSummaryViewModel
@@ -23,7 +22,7 @@ namespace Microsoft.EmailTask.EmailReport.ViewModel
         [DataMember]
         public int WarningCount { get; set; }
 
-        public TaskIssueSummaryViewModel(List<TaskDto> tasks)
+        public TaskIssueSummaryViewModel(List<TaskData> tasks)
         {
             var allIssues = new List<TaskIssueViewModel>();
             ErrorMessage = $"Failed on {tasks.Count(t => t.Status == TaskStatus.Failed || t.Status == TaskStatus.Canceled)}/{tasks.Count} Agents";
@@ -74,5 +73,11 @@ namespace Microsoft.EmailTask.EmailReport.ViewModel
 
             return truncatedIssues;
         }
+    }
+
+    public static class IssueTypeConstants
+    {
+        public const string Error = "Error";
+        public const string Warning = "Warning";
     }
 }

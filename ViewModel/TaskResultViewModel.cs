@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-using Microsoft.EmailTask.EmailReport.Dto;
-using Microsoft.EmailTask.EmailReport.ViewModel.Helpers;
+using EmailReportFunction.Config.Pipeline;
+using EmailReportFunction.ViewModel.Helpers;
 using Microsoft.VisualStudio.Services.ReleaseManagement.WebApi;
 
-namespace Microsoft.EmailTask.EmailReport.ViewModel
+namespace EmailReportFunction.ViewModel
 {
     [DataContract]
     public class TaskResultViewModel
@@ -38,7 +38,7 @@ namespace Microsoft.EmailTask.EmailReport.ViewModel
         {
         }
 
-        public TaskResultViewModel(List<TaskDto> tasks)
+        public TaskResultViewModel(List<TaskData> tasks)
         {
             Name = tasks.First().Name;
 
@@ -60,7 +60,7 @@ namespace Microsoft.EmailTask.EmailReport.ViewModel
             InitializeDuration(tasks);
         }
 
-        private void InitializeDuration(List<TaskDto> tasks)
+        private void InitializeDuration(List<TaskData> tasks)
         {
             if (tasks.Count == 1)
             {

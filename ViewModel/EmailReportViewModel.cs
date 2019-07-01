@@ -3,15 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
-using Microsoft.EmailTask.EmailReport.Config;
-using Microsoft.EmailTask.EmailReport.Dto;
-using Microsoft.EmailTask.EmailReport.Utils;
-using Microsoft.EmailTask.EmailReport.ViewModel.Helpers;
-using Microsoft.TeamFoundation.Tasks.Common.Exceptions;
-using Microsoft.TeamFoundation.Tasks.Common.Utils;
+using EmailReportFunction.Config;
+using EmailReportFunction.Config.Pipeline;
+using EmailReportFunction.Config.TestResults;
+using EmailReportFunction.Exceptions;
+using EmailReportFunction.Utils;
+using EmailReportFunction.ViewModel.Helpers;
 using Microsoft.TeamFoundation.TestManagement.WebApi;
 
-namespace Microsoft.EmailTask.EmailReport.ViewModel
+namespace EmailReportFunction.ViewModel
 {
     [DataContract]
     public class EmailReportViewModel
@@ -80,10 +80,9 @@ namespace Microsoft.EmailTask.EmailReport.ViewModel
         {
         }
 
-        public EmailReportViewModel(EmailReportDto emailReportDto,
-            EmailReportConfiguration emailReportConfiguration,
-            BaseConfiguration config)
+        public EmailReportViewModel(EmailReportDto emailReportDto, EmailReportConfiguration emailReportConfiguration)
         {
+            var config = emailReportConfiguration.PipelineConfiguration;
             ProjectName = config.ProjectName;
             HasTaskFailures = emailReportDto.HasFailedTasks();
             Release = emailReportDto.GetReleaseViewModel(config);
@@ -96,7 +95,7 @@ namespace Microsoft.EmailTask.EmailReport.ViewModel
             EmailSubject = GetMailSubject(emailReportDto, emailReportConfiguration);
             HasFailedTests = emailReportDto.HasFailedTests(emailReportConfiguration.IncludeOthersInTotalCount);
 
-            TestSummaryGroupDto summaryGroupDto = emailReportDto.TestSummaryGroups?.First();
+            var summaryGroupDto = emailReportDto.TestSummaryGroups?.First();
 
             if (emailReportDto.Summary != null)
             {
@@ -115,7 +114,7 @@ namespace Microsoft.EmailTask.EmailReport.ViewModel
 
             InitializeTestResultGroups(emailReportDto, emailReportConfiguration, config);
 
-            TestTabLink = config.GetTestTabLink();      
+            TestTabLink = config.TestTabLink;      
             DataMissing = emailReportDto.DataMissing;
         }
 
@@ -123,17 +122,15 @@ namespace Microsoft.EmailTask.EmailReport.ViewModel
 
         private void InitializeTestResultGroups(EmailReportDto emailReportDto,
             EmailReportConfiguration emailReportConfig,
-            BaseConfiguration config)
+            PipelineConfiguration config)
         {
             TestResultsGroups = new List<TestResultsGroupViewModel>();
 
             if (emailReportDto.FilteredResults != null)
             {
-                foreach (TestResultsGroupDto testResultsGroupDto in emailReportDto.FilteredResults)
+                foreach (var testSummaryGroup in emailReportDto.FilteredResults)
                 {
-                    var testResultsGroupViewModel = new TestResultsGroupViewModel(testResultsGroupDto,
-                        emailReportConfig,
-                        config);
+                    var testResultsGroupViewModel = new TestResultsGroupViewModel(testSummaryGroup, emailReportConfig);
 
                     TestResultsGroups.Add(testResultsGroupViewModel);
                 }
@@ -142,7 +139,7 @@ namespace Microsoft.EmailTask.EmailReport.ViewModel
             HasFilteredTests = emailReportDto.HasFilteredTests;
         }
 
-        private void InitializeAssociatedChanges(EmailReportDto emailReportDto, BaseConfiguration config)
+        private void InitializeAssociatedChanges(EmailReportDto emailReportDto, PipelineConfiguration config)
         {
             if (emailReportDto.AssociatedChanges?.Any() == true)
             {
@@ -235,18 +232,18 @@ namespace Microsoft.EmailTask.EmailReport.ViewModel
         }
 
         private void InitializeSummaryGroupViewModel(EmailReportDto emailReportDto,
-            EmailReportConfiguration emailReportConfiguration, BaseConfiguration config)
+            EmailReportConfiguration emailReportConfiguration, PipelineConfiguration config)
         {
             SummaryGroups = new List<TestSummaryGroupViewModel>();
             if (emailReportDto.TestSummaryGroups != null)
             {
-                foreach (TestSummaryGroupDto testSummaryGroupDto in emailReportDto.TestSummaryGroups)
+                foreach (var testSummaryGroup in emailReportDto.TestSummaryGroups)
                 {
                     if (emailReportConfiguration.GroupTestSummaryBy
-                        .Any(group => group == testSummaryGroupDto.GroupedBy))
+                        .Any(group => group == testSummaryGroup.GroupingType))
                     {
-                        Log.LogVerbose($"Creating summary group viewmodel for {testSummaryGroupDto.GroupedBy}");
-                        SummaryGroups.Add(new TestSummaryGroupViewModel(testSummaryGroupDto, config,
+                        // TODO - Log.LogVerbose($"Creating summary group viewmodel for {testSummaryGroupDto.GroupedBy}");
+                        SummaryGroups.Add(new TestSummaryGroupViewModel(testSummaryGroup, config,
                             emailReportConfiguration.IncludeOthersInTotalCount));
                     }
                 }

@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
-using Microsoft.EmailTask.EmailReport.Config;
-using Microsoft.EmailTask.EmailReport.Dto;
-using Microsoft.EmailTask.EmailReport.Utils;
-using Microsoft.EmailTask.EmailReport.ViewModel.Helpers;
+using EmailReportFunction.Config;
+using EmailReportFunction.Config.TestResults;
+using EmailReportFunction.Utils;
+using EmailReportFunction.ViewModel.Helpers;
 using Microsoft.TeamFoundation.TestManagement.WebApi;
 using Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models;
 
-namespace Microsoft.EmailTask.EmailReport.ViewModel
+namespace EmailReportFunction.ViewModel
 {
     [DataContract]
     public class TestResultViewModel
@@ -57,7 +57,7 @@ namespace Microsoft.EmailTask.EmailReport.ViewModel
         [DataMember]
         public string Url { get; set; }
 
-        public TestResultViewModel(TestResultDto testResultDto, BaseConfiguration config)
+        public TestResultViewModel(TestResultData testResultDto, PipelineConfiguration config)
         {
             TestCaseResult result = testResultDto.TestResult;
             Id = result.Id;
@@ -84,9 +84,9 @@ namespace Microsoft.EmailTask.EmailReport.ViewModel
                     failingSinceNotCurrent = result.FailingSince?.Release?.Id != releaseConfig.ReleaseId;
                     break;
 
-                case Config.BuildConfiguration buildConfig:
-                    failingSinceNotCurrent = result.FailingSince?.Build?.Id != buildConfig.BuildId;
-                    break;
+                //TODO case Config.BuildConfiguration buildConfig:
+                //    failingSinceNotCurrent = result.FailingSince?.Build?.Id != buildConfig.BuildId;
+                //    break;
 
                 default:
                     throw new NotSupportedException();
@@ -112,8 +112,7 @@ namespace Microsoft.EmailTask.EmailReport.ViewModel
             CreateBugLink = LinkHelper.GetCreateBugLinkForTest(config, testResultDto.TestResult);
         }
 
-        private void InitializeAssociatedBugs(BaseConfiguration config,
-            IEnumerable<WorkItem> associatedBugs)
+        private void InitializeAssociatedBugs(PipelineConfiguration config, IEnumerable<WorkItem> associatedBugs)
         {
             if (associatedBugs == null)
             {

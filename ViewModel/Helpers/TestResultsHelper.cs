@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using Microsoft.EmailTask.EmailReport.Dto;
+using EmailReportFunction.Config.TestResults;
 using Microsoft.TeamFoundation.TestManagement.WebApi;
-using Microsoft.TeamFoundation.Tasks.Common.Utils;
 
-namespace Microsoft.EmailTask.EmailReport.ViewModel.Helpers
+namespace EmailReportFunction.ViewModel.Helpers
 {
     public static class TestResultsHelper
     {
@@ -14,7 +13,7 @@ namespace Microsoft.EmailTask.EmailReport.ViewModel.Helpers
         {
             if (totalTests == 0)
             {
-                Log.LogInfo("Total Test count is 0. Setting outcome percentage to 0");
+                //TODO - Log.LogInfo("Total Test count is 0. Setting outcome percentage to 0");
             }
 
             double testOutcomePercentage = totalTests == 0 ?

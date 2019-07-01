@@ -3,16 +3,15 @@ using System.Linq;
 using System;
 using EmailReportFunction.Config;
 using Microsoft.Extensions.Logging;
-using EmailReportFunction.Utils;
 using EmailReportFunction.Config.Pipeline;
 using Microsoft.VisualStudio.Services.ReleaseManagement.WebApi;
 using EmailReportFunction.Wrappers.Microsoft.EmailTask.EmailReport.Wrappers;
-using EmailReportFunction.Wrappers;
 using Microsoft.VisualStudio.Services.ReleaseManagement.WebApi.Exceptions;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Services.ReleaseManagement.WebApi.Contracts;
-using Microsoft.VisualStudio.Services.Identity;
 using Microsoft.VisualStudio.Services.WebApi;
+using EmailReportFunction.Utils;
+using EmailReportFunction.Config.TestResults;
 
 namespace EmailReportFunction.DataProviders
 {
@@ -21,9 +20,11 @@ namespace EmailReportFunction.DataProviders
         public ReleaseDataProvider(ReleaseConfiguration pipelineConfiguration, 
             IReleaseHttpClientWrapper releaseHttpClient, 
             IDataProvider<List<IdentityRef>> failedTestOwnersDataProvider,
+            IDataProvider<IEnumerable<TestResultsGroupData>> testResultsDataProvider,
             ILogger logger)
         {
             _failedTestOwnersDataProvider = failedTestOwnersDataProvider;
+            _testResultsDataProvider = testResultsDataProvider;
             _releaseConfiguration = pipelineConfiguration;
             _releaseHttpClient = releaseHttpClient;
             _logger = logger;
@@ -32,6 +33,7 @@ namespace EmailReportFunction.DataProviders
         private ReleaseConfiguration _releaseConfiguration;
         private IReleaseHttpClientWrapper _releaseHttpClient;
         private IDataProvider<List<IdentityRef>> _failedTestOwnersDataProvider;
+        private IDataProvider<IEnumerable<TestResultsGroupData>> _testResultsDataProvider;
         private ILogger _logger;
 
 
@@ -50,7 +52,7 @@ namespace EmailReportFunction.DataProviders
 
                 release.Properties.Add(ReleaseData.ReleaseEnvironmentIdString, _releaseConfiguration.EnvironmentId);
                 release.Properties.Add(ReleaseData.UsePrevReleaseEnvironmentString, _releaseConfiguration.UsePreviousEnvironment);
-                var releaseData = new ReleaseData(release, this, _failedTestOwnersDataProvider);
+                var releaseData = new ReleaseData(release, this, _failedTestOwnersDataProvider, _testResultsDataProvider);
 
                 _logger.LogInformation("ReleaseDataProvider: Fetched release data");
                 return releaseData;
@@ -84,7 +86,7 @@ namespace EmailReportFunction.DataProviders
                 if (primaryArtifact != null)
                 {
                     artifactAlias = primaryArtifact.Alias;
-                    branchId = primaryArtifact.GetArtifactInfo(ArtifactDefinitionConstants.BranchId)?.Id;
+                    branchId = primaryArtifact.GetArtifactInfo(Microsoft.VisualStudio.Services.ReleaseManagement.WebApi.ArtifactDefinitionConstants.BranchId)?.Id;
                 }
             }
 

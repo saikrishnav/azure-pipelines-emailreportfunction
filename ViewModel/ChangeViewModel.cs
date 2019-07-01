@@ -1,11 +1,11 @@
-﻿using System;
+﻿using EmailReportFunction.Config;
+using EmailReportFunction.Config.Pipeline;
+using EmailReportFunction.Utils;
+using EmailReportFunction.ViewModel.Helpers;
+using System;
 using System.Runtime.Serialization;
-using Microsoft.EmailTask.EmailReport.Config;
-using Microsoft.EmailTask.EmailReport.Dto;
-using Microsoft.EmailTask.EmailReport.Utils;
-using Microsoft.EmailTask.EmailReport.ViewModel.Helpers;
 
-namespace Microsoft.EmailTask.EmailReport.ViewModel
+namespace EmailReportFunction.ViewModel
 {
     [DataContract]
     public class ChangeViewModel
@@ -42,7 +42,7 @@ namespace Microsoft.EmailTask.EmailReport.ViewModel
             Url = url;
         }
 
-        public ChangeViewModel(ChangeDto change, BaseConfiguration config)
+        public ChangeViewModel(ChangeData change, PipelineConfiguration config)
             : this(change.Id,
                 StringUtils.CompressNewLines(change.Message),
                 change.Author?.DisplayName,

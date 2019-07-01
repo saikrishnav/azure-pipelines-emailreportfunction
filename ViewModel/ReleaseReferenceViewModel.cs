@@ -1,9 +1,9 @@
 ﻿using System.Runtime.Serialization;
-using Microsoft.EmailTask.EmailReport.Config;
-using Microsoft.EmailTask.EmailReport.Utils;
+using EmailReportFunction.Config;
+using EmailReportFunction.ViewModel.Helpers;
 using Microsoft.TeamFoundation.TestManagement.WebApi;
 
-namespace Microsoft.EmailTask.EmailReport.ViewModel
+namespace EmailReportFunction.ViewModel
 {
     [DataContract]
     public class ReleaseReferenceViewModel
@@ -17,7 +17,7 @@ namespace Microsoft.EmailTask.EmailReport.ViewModel
         [DataMember]
         public string Url { get; set; }
 
-        public ReleaseReferenceViewModel(BaseConfiguration config, ReleaseReference releaseReference)
+        public ReleaseReferenceViewModel(PipelineConfiguration config, ReleaseReference releaseReference)
         {
             Id = releaseReference.Id;
             Name = releaseReference.Name;

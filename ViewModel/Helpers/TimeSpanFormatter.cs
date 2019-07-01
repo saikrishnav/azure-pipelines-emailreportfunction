@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text;
 
-namespace Microsoft.EmailTask.EmailReport.ViewModel.Helpers
+namespace EmailReportFunction.ViewModel.Helpers
 {
     public static class TimeSpanFormatter
     {

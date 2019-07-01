@@ -1,14 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-using Microsoft.EmailTask.EmailReport.Config;
-using Microsoft.EmailTask.EmailReport.Dto;
-using Microsoft.EmailTask.EmailReport.Utils;
-using Microsoft.EmailTask.EmailReport.ViewModel.Helpers;
+using EmailReportFunction.Config;
+using EmailReportFunction.Config.TestResults;
+using EmailReportFunction.Utils;
+using EmailReportFunction.ViewModel.Helpers;
 using Microsoft.TeamFoundation.TestManagement.WebApi;
-using GroupTestResultsBy = Microsoft.EmailTask.EmailReport.Config.GroupTestResultsBy;
 
-namespace Microsoft.EmailTask.EmailReport.ViewModel
+namespace EmailReportFunction.ViewModel
 {
     [DataContract]
     public class TestResultsGroupViewModel
@@ -25,30 +24,28 @@ namespace Microsoft.EmailTask.EmailReport.ViewModel
         [DataMember]
         public List<TestResultViewModel> PassedTests { get; set; }
 
-        public TestResultsGroupViewModel(TestResultsGroupDto resultsGroupDto, 
-            EmailReportConfiguration emailReportConfig, 
-            BaseConfiguration config)
+        public TestResultsGroupViewModel(TestResultsGroupData resultsGroupData, EmailReportConfiguration emailReportConfig)
         {
-            SetGroupName(resultsGroupDto, emailReportConfig);
-            FailedTests = GetTestResultViewModels(resultsGroupDto, config, TestOutcome.Failed);
-            PassedTests = GetTestResultViewModels(resultsGroupDto, config, TestOutcome.Passed);
-            OtherTests = GetTestResultViewModels(resultsGroupDto, config,
+            SetGroupName(resultsGroupData, emailReportConfig);
+            FailedTests = GetTestResultViewModels(resultsGroupData, emailReportConfig.PipelineConfiguration, TestOutcome.Failed);
+            PassedTests = GetTestResultViewModels(resultsGroupData, emailReportConfig.PipelineConfiguration, TestOutcome.Passed);
+            OtherTests = GetTestResultViewModels(resultsGroupData, emailReportConfig.PipelineConfiguration,
                 EnumHelper.GetEnumsExcept(TestOutcome.Failed, TestOutcome.Passed));
         }
 
-        private void SetGroupName(TestResultsGroupDto resultsGroupDto, EmailReportConfiguration emailReportConfig)
+        private void SetGroupName(TestResultsGroupData resultsGroupData, EmailReportConfiguration emailReportConfig)
         {
-            GroupTestResultsBy groupTestResultsBy = emailReportConfig.TestResultsConfiguration.GroupTestResultsBy;
+            var groupTestResultsBy = emailReportConfig.TestResultsConfiguration.GroupingType;
 
-            GroupName = groupTestResultsBy == GroupTestResultsBy.Priority ? 
-                PriorityDisplayNameHelper.GetDisplayName(resultsGroupDto.GroupName) : 
-                resultsGroupDto.GroupName;
+            GroupName = groupTestResultsBy == TestResultsGroupingType.Priority ? 
+                PriorityDisplayNameHelper.GetDisplayName(resultsGroupData.GroupName) :
+                resultsGroupData.GroupName;
         }
 
-        private static List<TestResultViewModel> GetTestResultViewModels(TestResultsGroupDto resultsGroupDto,
-            BaseConfiguration config, params TestOutcome[] testOutcomes)
+        private static List<TestResultViewModel> GetTestResultViewModels(TestResultsGroupData resultsGroupData,
+            PipelineConfiguration config, params TestOutcome[] testOutcomes)
         {
-            return resultsGroupDto.GetTestResultsByOutcomes(testOutcomes)
+            return resultsGroupData.GetTestResultsByOutcomes(testOutcomes)
                 .Select(result => new TestResultViewModel(result, config)).ToList();
         }
     }

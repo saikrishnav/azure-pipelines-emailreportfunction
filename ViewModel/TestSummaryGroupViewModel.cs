@@ -1,11 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.Serialization;
-using Microsoft.EmailTask.EmailReport.Config;
-using Microsoft.EmailTask.EmailReport.Constants;
-using Microsoft.EmailTask.EmailReport.Dto;
-using Microsoft.EmailTask.EmailReport.Utils;
+using EmailReportFunction.Config;
+using EmailReportFunction.Config.TestResults;
+using EmailReportFunction.Utils;
 
-namespace Microsoft.EmailTask.EmailReport.ViewModel
+namespace EmailReportFunction.ViewModel
 {
     [DataContract]
     public class TestSummaryGroupViewModel
@@ -19,25 +18,25 @@ namespace Microsoft.EmailTask.EmailReport.ViewModel
         [DataMember]
         private SortedSet<int> SupportedPriorityColumns { get; set; }
 
-        public TestSummaryGroupViewModel(TestSummaryGroupDto testSummaryGroupDto, BaseConfiguration config,
+        public TestSummaryGroupViewModel(TestSummaryGroup testSummaryGroup, PipelineConfiguration config,
             bool includeOthersInTotal)
         {
-            GroupName = testSummaryGroupDto.GroupedBy.GetDescription();
+            GroupName = testSummaryGroup.GroupingType.GetDescription();
 
-            InitializeSummaryItems(testSummaryGroupDto, config, includeOthersInTotal);
+            InitializeSummaryItems(testSummaryGroup, config, includeOthersInTotal);
 
             InitializeSupportedPriorityColumns();
         }
 
         #region Helpers
 
-        private void InitializeSummaryItems(TestSummaryGroupDto testSummaryGroupDto, BaseConfiguration config,
+        private void InitializeSummaryItems(TestSummaryGroup testSummaryGroup, PipelineConfiguration config,
             bool includeOthersInTotal)
         {
             SummaryItems = new List<TestSummaryItemViewModel>();
-            foreach (TestSummaryItemDto testSummaryItemDto in testSummaryGroupDto.Runs)
+            foreach (var testSummaryItem in testSummaryGroup.Runs)
             {
-                SummaryItems.Add(new TestSummaryItemViewModel(testSummaryGroupDto.GroupedBy, testSummaryItemDto, config, includeOthersInTotal));
+                SummaryItems.Add(new TestSummaryItemViewModel(testSummaryGroup.GroupingType, testSummaryItem, config, includeOthersInTotal));
             }
         }
 

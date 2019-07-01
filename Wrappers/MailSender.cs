@@ -12,47 +12,19 @@ namespace EmailReportFunction.Wrappers
     public class MailSender : IMailSender
     {
         private ILogger _logger;
+        private EmailReportConfiguration _emailReportConfiguration;
 
-        public MailSender(ILogger logger)
+        public MailSender(EmailReportConfiguration reportConfig, ILogger logger)
         {
             _logger = logger;
+            _emailReportConfiguration = reportConfig;
         }
 
-        public async Task<bool> SendMailAsync(IPipelineData pipelineData)
-        {
-            var smtpConfiguration = await CreateSmtpConfigurationAsync();
-            var msg = CreateMailMessage(smtpConfiguration, pipelineData.ToString());//emailReportDto, emailReportConfig, config);
-            return await SendMail(msg, smtpConfiguration);//, emailReportConfig.SmtpConfiguration);            
-        }
-
-        private MailMessage CreateMailMessage(SmtpConfiguration smtpConfiguration, string body) //EmailReportDto emailReportDto, EmailReportConfiguration emailReportConfig,           BaseConfiguration config)
-        {
-            // Create a message and set up the recipients.
-            var message = new MailMessage(
-            smtpConfiguration.UserName,
-            "svajjala@microsoft.com",
-            "[EmailTaskPPE] Test Azure Function", 
-            body);
-
-            //MailAddressViewModel mailAddressViewModel = GetMailAddressViewModel(emailReportDto, emailReportConfig);
-            //msg.From = mailAddressViewModel.From;
-            //msg.To.AddRange("svajjala@microsoft.com");
-            //msg.CC.AddRange(mailAddressViewModel.Cc);
-
-            //var emailReportViewModel = new EmailReportViewModel(emailReportDto, emailReportConfig, config);
-            //Log.LogInfo("Generated view model");
-
-            // msg.Subject =  emailReportViewModel.EmailSubject;
-
-            // msg.Body = GenerateBodyFromViewModel(emailReportViewModel);
-
-            return message;
-        }
-
-        private async Task<bool> SendMail(MailMessage msg, SmtpConfiguration smtpConfiguration) //, SmtpConfiguration smtpConfig)
+        public async Task<bool> SendMailAsync(MailMessage message)
         {
             try
             {
+                var smtpConfiguration = await _emailReportConfiguration.GetSmtpConfigurationAsync();
                 var smtpInfo = new UriBuilder(smtpConfiguration.SmtpHost);               
                 using (var smtpClient = new SmtpClient(smtpInfo.Host))
                 {
@@ -66,7 +38,7 @@ namespace EmailReportFunction.Wrappers
                     smtpClient.Credentials = new NetworkCredential(smtpConfiguration.UserName, smtpConfiguration.Password);
 
                     _logger.LogInformation($"Sending Mail using SmtpHost as '{smtpInfo.Host}:{smtpInfo.Port}' and EnableSSL as '{smtpClient.EnableSsl}'");
-                    await smtpClient.SendMailAsync(msg);
+                    await smtpClient.SendMailAsync(message);
 
                     return true;
                 }
@@ -77,33 +49,5 @@ namespace EmailReportFunction.Wrappers
             }
             return false;
         }
-
-        private async Task<SmtpConfiguration> CreateSmtpConfigurationAsync()
-        {
-            var reportInputs = this.GetReportInputs();
-            var secret = await KeyVaultReader.FetchSecret(reportInputs.KeyVaultName,
-                reportInputs.SecretName, reportInputs.RetryCount, _logger);
-
-            return new SmtpConfiguration()
-            {
-                EnableSSL = true,
-                SmtpHost = reportInputs.SmtpHost,
-                UserName = reportInputs.MailSenderAddress,
-                Password = secret.Value
-            };
-        }
-
-        private ReportInputs GetReportInputs()
-        {
-            return new ReportInputs()
-            {
-                KeyVaultName = "vstsbuild",
-                SecretName = "azpipes",
-                MailSenderAddress = $"azpipes@microsoft.com",
-                SmtpHost = "https://smtp.office365.com",
-                RetryCount = 3
-            };
-        }
-
     }
 }

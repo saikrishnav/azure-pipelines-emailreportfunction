@@ -1,10 +1,10 @@
-﻿using System;
+﻿using EmailReportFunction.Config.Pipeline;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-using Microsoft.EmailTask.EmailReport.Dto;
 
-namespace Microsoft.EmailTask.EmailReport.ViewModel
+namespace EmailReportFunction.ViewModel
 {
     [DataContract]
     public class DeploymentJobViewModel
@@ -23,17 +23,17 @@ namespace Microsoft.EmailTask.EmailReport.ViewModel
 
         }
 
-        public DeploymentJobViewModel(IList<JobDto> jobs)
+        public DeploymentJobViewModel(IList<JobData> jobs)
         {
             Tasks = new List<TaskResultViewModel>();
 
             if (jobs.Count > 0)
             {
                 int taskIndex = 0;
-                List<TaskDto> releaseTasks;
+                List<TaskData> releaseTasks;
                 do
                 {
-                    releaseTasks = new List<TaskDto>();
+                    releaseTasks = new List<TaskData>();
                     foreach (var job in jobs)
                     {
                         // Not all jobs have same set of tasks

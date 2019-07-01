@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.Services.ReleaseManagement.WebApi;
+﻿using EmailReportFunction.ViewModel.Helpers;
+using Microsoft.VisualStudio.Services.ReleaseManagement.WebApi;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -20,5 +21,19 @@ namespace EmailReportFunction.Config
         public Release LastCompletedRelease { get; set; }
 
         public ReleaseEnvironment LastCompletedEnvironment { get; set; }
+
+        private string _testTabLink; 
+
+        public override string TestTabLink
+        {
+            get
+            {
+                if (_testTabLink == null)
+                {
+                    _testTabLink = LinkHelper.GetTestTabLinkInRelease(this);
+                }
+                return _testTabLink;
+            }
+        }
     }
 }

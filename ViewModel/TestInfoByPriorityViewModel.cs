@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.Serialization;
-using Microsoft.EmailTask.EmailReport.Dto;
-using Microsoft.EmailTask.EmailReport.ViewModel.Helpers;
+using EmailReportFunction.Config.TestResults;
+using EmailReportFunction.ViewModel.Helpers;
 
-namespace Microsoft.EmailTask.EmailReport.ViewModel
+namespace EmailReportFunction.ViewModel
 {
     [DataContract]
     public class TestInfoByPriorityViewModel

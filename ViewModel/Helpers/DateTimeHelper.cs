@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Microsoft.EmailTask.EmailReport.ViewModel.Helpers
+namespace EmailReportFunction.ViewModel.Helpers
 {
     public static class DateTimeHelper
     {

@@ -6,24 +6,27 @@ using Microsoft.Extensions.Logging;
 using Microsoft.TeamFoundation.TestManagement.WebApi;
 using Microsoft.VisualStudio.Services.WebApi;
 using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
 
 namespace EmailReportFunction.Wrappers
 {
-    public abstract class TcmApiHelper : ITcmApiHelper
+    public abstract class AbstractTcmApiHelper : ITcmApiHelper
     {
         internal const int MaxItemsSupported = 100;
 
-        private ITestManagementHttpClientWrapper _tcmClient;
-        private EmailReportConfiguration _emailReportConfig;
-        private ILogger _logger;
+        protected ITestManagementHttpClientWrapper _tcmClient;
+        protected EmailReportConfiguration _emailReportConfig;
+        protected ILogger _logger;
 
-        public TcmApiHelper(ITestManagementHttpClientWrapper tcmClient, EmailReportConfiguration emailReportConfiguration, ILogger logger)
+        public AbstractTcmApiHelper(ITestManagementHttpClientWrapper tcmClient, EmailReportConfiguration emailReportConfiguration, ILogger logger)
         {
             _logger = logger;
             _tcmClient = tcmClient;
@@ -45,7 +48,7 @@ namespace EmailReportFunction.Wrappers
                 {
                     // TODO - retry
                     TestResultsQuery resultQuery = // RetryHelper.Retry(() =>
-                      await _tcmClient.GetTestResultsByQueryAsync(_emailReportConfig.ProjectId, new TestResultsQuery
+                      await _tcmClient.GetTestResultsByQueryAsync(_emailReportConfig.PipelineConfiguration.ProjectId, new TestResultsQuery
                       {
                           Fields = fieldsToFetch,
                           Results = chunk
@@ -66,14 +69,14 @@ namespace EmailReportFunction.Wrappers
         {
             //TODO - retry
             return //RetryHelper.Retry(() =>
-               await _tcmClient.GetTestResultByIdAsync(_emailReportConfig.ProjectId, runId, testCaseResultId, cancellationToken: cancellationToken);
+               await _tcmClient.GetTestResultByIdAsync(_emailReportConfig.PipelineConfiguration.ProjectId, runId, testCaseResultId, cancellationToken: cancellationToken);
         }
 
         public async Task<List<WorkItemReference>> QueryTestResultBugsAsync(string automatedTestName, int testCaseId, 
             CancellationToken cancellationToken = new CancellationToken())
         {
             return // TODO - RetryHelper.Retry(() =>
-                await _tcmClient.QueryTestResultWorkItemsAsync(_emailReportConfig.ProjectId, automatedTestName, testCaseId, "Microsoft.BugCategory", cancellationToken);
+                await _tcmClient.QueryTestResultWorkItemsAsync(_emailReportConfig.PipelineConfiguration.ProjectId, automatedTestName, testCaseId, "Microsoft.BugCategory", cancellationToken);
         }
 
         public async Task<List<TestSummaryItem>> GetTestRunSummaryWithPriorityAsync()
@@ -93,11 +96,11 @@ namespace EmailReportFunction.Wrappers
                     }
                 });
 
-                var prioritySummaryFetchTask = Task.Run(() =>
+                var prioritySummaryFetchTask = Task.Run(async () =>
                 {
                     using (new PerformanceMeasurementBlock("Get test summary data by priority", _logger))
                     {
-                        testResultDetailsByOutcomeForPriorityGroup = GetTestSummaryDataByPriority();
+                        testResultDetailsByOutcomeForPriorityGroup = await GetTestSummaryDataByPriorityAsync();
                     }
                 });
 
@@ -117,6 +120,8 @@ namespace EmailReportFunction.Wrappers
 
         protected abstract Task<TestResultsDetails> GetTestResultsDetailsAsync();
 
+        protected abstract Task<TestResultsDetails> GetTestResultsDetailsAsync(IEnumerable<TestOutcome> testOutcomes);
+
         public abstract Task<TestResultSummary> GetTestResultSummaryAsync();
 
         public abstract Task<TestResultsDetails> GetTestSummaryAsync(string groupBy, params TestOutcome[] includeOutcomes);
@@ -125,7 +130,7 @@ namespace EmailReportFunction.Wrappers
 
         #region Helper methods
 
-        private IReadOnlyDictionary<TestOutcomeForPriority, TestResultDetailsParserForPriority> GetTestSummaryDataByPriority()
+        private async Task<IReadOnlyDictionary<TestOutcomeForPriority, TestResultDetailsParserForPriority>> GetTestSummaryDataByPriorityAsync()
         {
             var outcomeFilters = new Dictionary
                 <TestOutcomeForPriority, TestOutcome[]>
@@ -144,27 +149,24 @@ namespace EmailReportFunction.Wrappers
             var testResultDetailsForOutcomes =
                 new ConcurrentDictionary<TestOutcomeForPriority, TestResultDetailsParserForPriority>();
 
-
-            Parallel.ForEach(outcomeFilters.Keys, supportedOutcome =>
+            var analyzerWorker = new ActionBlock<TestOutcomeForPriority>(async supportedOutcome =>
             {
                 _logger.LogInformation(
                     $"Fetching test summary data by priority for supported outcome type - {supportedOutcome}");
 
-                var result = this.GetTestResultsDetails(outcomeFilters, supportedOutcome);
+                var result = await this.GetTestResultsDetailsAsync(outcomeFilters[supportedOutcome]);
 
                 _logger.LogInformation(
                     $"Fetched test summary data by priority for supported outcome type - {supportedOutcome}");
 
-                testResultDetailsForOutcomes[supportedOutcome] = new TestResultDetailsParserForPriority(result, _logger);
+                testResultDetailsForOutcomes.TryAdd(supportedOutcome, new TestResultDetailsParserForPriority(result, _logger));
             });
 
-            return new Dictionary<TestOutcomeForPriority, TestResultDetailsParserForPriority>(testResultDetailsForOutcomes);
+            await PostAllAndComplete(analyzerWorker, outcomeFilters.Keys);
+            return new ReadOnlyDictionary<TestOutcomeForPriority, TestResultDetailsParserForPriority>(testResultDetailsForOutcomes);
         }
 
-        protected abstract TestResultsDetails GetTestResultsDetails(Dictionary<TestOutcomeForPriority, TestOutcome[]> outcomeFilters, 
-            TestOutcomeForPriority supportedOutcome);
-
-        protected static string GetOutcomeFilter(TestOutcome[] outcomes)
+        protected static string GetOutcomeFilter(IEnumerable<TestOutcome> outcomes)
         {
             var filter = outcomes.Any()
                 ? $"Outcome eq {string.Join(",", outcomes.Select(outcome => (int)outcome).Distinct())}"
@@ -213,6 +215,17 @@ namespace EmailReportFunction.Wrappers
             }
 
             return summaryItemByRun;
+        }
+
+        public Task PostAllAndComplete<T>(ITargetBlock<T> actionBlock, IEnumerable<T> inputs)
+        {
+            foreach (T input in inputs)
+            {
+                actionBlock.Post(input);
+            }
+
+            actionBlock.Complete();
+            return actionBlock.Completion;
         }
 
         #endregion

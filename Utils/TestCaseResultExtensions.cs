@@ -278,7 +278,7 @@ namespace EmailReportFunction.Utils
                     requiredString += $"<a href=’#’ data-vss-mention=’version:2.0,{user.Id}>@{user.Name}</a>";
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 // TODO - Log.LogError($"Exception encountered in building mentions format: {e.ToString()}");
             }

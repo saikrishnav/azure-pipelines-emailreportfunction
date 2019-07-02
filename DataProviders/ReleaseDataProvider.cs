@@ -21,12 +21,14 @@ namespace EmailReportFunction.DataProviders
             IReleaseHttpClientWrapper releaseHttpClient, 
             IDataProvider<List<IdentityRef>> failedTestOwnersDataProvider,
             IDataProvider<IEnumerable<TestResultsGroupData>> testResultsDataProvider,
+            IDataProvider<TestSummaryData> testSummaryDataProvider,
             ILogger logger)
         {
             _failedTestOwnersDataProvider = failedTestOwnersDataProvider;
             _testResultsDataProvider = testResultsDataProvider;
             _releaseConfiguration = pipelineConfiguration;
             _releaseHttpClient = releaseHttpClient;
+            _testSummaryDataProvider = testSummaryDataProvider;
             _logger = logger;
         }
 
@@ -34,6 +36,7 @@ namespace EmailReportFunction.DataProviders
         private IReleaseHttpClientWrapper _releaseHttpClient;
         private IDataProvider<List<IdentityRef>> _failedTestOwnersDataProvider;
         private IDataProvider<IEnumerable<TestResultsGroupData>> _testResultsDataProvider;
+        private IDataProvider<TestSummaryData> _testSummaryDataProvider;
         private ILogger _logger;
 
 
@@ -52,7 +55,7 @@ namespace EmailReportFunction.DataProviders
 
                 release.Properties.Add(ReleaseData.ReleaseEnvironmentIdString, _releaseConfiguration.EnvironmentId);
                 release.Properties.Add(ReleaseData.UsePrevReleaseEnvironmentString, _releaseConfiguration.UsePreviousEnvironment);
-                var releaseData = new ReleaseData(release, this, _failedTestOwnersDataProvider, _testResultsDataProvider);
+                var releaseData = new ReleaseData(release, this, _failedTestOwnersDataProvider, _testResultsDataProvider, _testSummaryDataProvider);
 
                 _logger.LogInformation("ReleaseDataProvider: Fetched release data");
                 return releaseData;

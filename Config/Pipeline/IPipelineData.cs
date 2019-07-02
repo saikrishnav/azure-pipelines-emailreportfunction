@@ -1,4 +1,5 @@
 ﻿using EmailReportFunction.Config.TestResults;
+using EmailReportFunction.DataProviders;
 using Microsoft.VisualStudio.Services.WebApi;
 using System;
 using System.Collections;
@@ -17,5 +18,7 @@ namespace EmailReportFunction.Config.Pipeline
         Task<List<IdentityRef>> GetFailedTestOwnersAsync();
 
         Task<IEnumerable<TestResultsGroupData>> GetFilteredTestsAsync();
+
+        Task<TestSummaryData> GetTestSummaryDataAsync();
     }
 }

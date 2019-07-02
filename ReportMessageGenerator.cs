@@ -18,6 +18,7 @@ using Microsoft.Extensions.Logging;
 using EmailReportFunction.ViewModel;
 using Microsoft.VisualStudio.Services.Common;
 using Artifact = Microsoft.VisualStudio.Services.ReleaseManagement.WebApi.Contracts.Artifact;
+using EmailReportFunction.DataProviders;
 
 namespace EmailReportFunction
 {
@@ -48,6 +49,9 @@ namespace EmailReportFunction
             emailReportDto.LastCompletedEnvironment = await releaseData.GetLastCompletedEnvironmentAsync();
             emailReportDto.CreatedBy = releaseData.Release.CreatedBy;
 
+            var summaryData = await pipelineData.GetTestSummaryDataAsync();
+            emailReportDto.Summary = summaryData.ResultSummary;
+            emailReportDto.TestSummaryGroups = summaryData.TestSummaryGroups;
             // TODO - Has FilteredResults
 
             var msg = new System.Net.Mail.MailMessage { IsBodyHtml = true };

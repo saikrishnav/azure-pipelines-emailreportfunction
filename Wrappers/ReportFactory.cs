@@ -36,15 +36,22 @@ namespace EmailReportFunction.Wrappers
                     this.GetReleaseHttpClient(releaseConfig, logger),
                     this.GetFailedTestOwnersDataProvider(emailReportConfiguration, logger),
                     this.GetTestResultsDataProvider(emailReportConfiguration, logger),
+                    this.GetTestSummaryDataProvider(emailReportConfiguration, logger),
                     logger);
             }
             return null;
         }
 
-        private IDataProvider<List<IdentityRef>> GetFailedTestOwnersDataProvider(EmailReportConfiguration emailReportConfiguration, ILogger log)
+        private TestSummaryDataProvider GetTestSummaryDataProvider(EmailReportConfiguration emailReportConfiguration, ILogger logger)
         {
-            var tcmApiHelper = GetTcmApiHelper(emailReportConfiguration, log);
-            return new FailedTestOwnersDataProvider(tcmApiHelper, log);
+            var tcmApiHelper = GetTcmApiHelper(emailReportConfiguration, logger);
+            return new TestSummaryDataProvider(tcmApiHelper, emailReportConfiguration, logger);
+        }
+
+        private IDataProvider<List<IdentityRef>> GetFailedTestOwnersDataProvider(EmailReportConfiguration emailReportConfiguration, ILogger logger)
+        {
+            var tcmApiHelper = GetTcmApiHelper(emailReportConfiguration, logger);
+            return new FailedTestOwnersDataProvider(tcmApiHelper, logger);
         }
 
         private IDataProvider<IEnumerable<TestResultsGroupData>> GetTestResultsDataProvider(EmailReportConfiguration emailReportConfiguration, ILogger log)

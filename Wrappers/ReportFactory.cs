@@ -113,29 +113,45 @@ namespace EmailReportFunction.Wrappers
             if (_reportConfiguration == null)
             {
                 var data = (JObject)JsonConvert.DeserializeObject(jsonRequest);
-                var pipelineType = data.GetValue("PipelineType").ToObject<PipelineType>();
                 var accessToken = data.GetValue("System.AccessToken").ToString();
                 var credentials = new VssBasicCredential("", accessToken);
 
-                //TODO  -default
-                var testResultsConfig = new TestResultsConfiguration()
+                var reportDataConfigurationObject = (JObject)JsonConvert.DeserializeObject(data.GetValue("ReportDataConfiguration").ToString());
+                var reportDataConfiguration = new ReportDataConfiguration()
                 {
-                    GroupingType = TestResultsGroupingType.Run,
-                    IncludeFailedTests = true,
-                    MaxItemsToShow = 10
+                    IncludeCommits = reportDataConfigurationObject.GetJsonValue<bool>("IncludeCommits"),
+                    IncludeOthersInTotal = reportDataConfigurationObject.GetJsonValue<bool>("IncludeOthersInTotal"),
+                    IncludeResults = reportDataConfigurationObject.GetJsonValue<bool>("IncludeResults"),
+                    UsePreviousEnvironment = reportDataConfigurationObject.GetJsonValue<bool>("UsePreviousEnvironment"),
+                    GroupTestSummaryBy = reportDataConfigurationObject.GetJsonValue<TestResultsGroupingType>("GroupTestSummaryBy"),
+                    MaxFailuresToShow = reportDataConfigurationObject.GetJsonValue<int>("MaxFailuresToShow"),
+                    GroupTestResultsBy = reportDataConfigurationObject.GetJsonValue<TestResultsGroupingType>("GroupTestResultsBy")
                 };
+
+                var mailConfigurationObject  = (JObject)JsonConvert.DeserializeObject(data.GetValue("EmailConfiguration").ToString());
+                var mailConfiguration = new MailConfiguration()
+                {
+                    SendMailCondition = mailConfigurationObject.GetJsonValue<SendMailCondition>("SendMailCondition"),
+                    ToAddrresses = mailConfigurationObject.GetJsonValue<string>("ToAddresses"),
+                    IncludeInTo = mailConfigurationObject.GetJsonValue<string>("IncludeInTo"),
+                    CcAddrresses = mailConfigurationObject.GetJsonValue<string>("CcAddrresses"),
+                    IncludeInCc = mailConfigurationObject.GetJsonValue<string>("IncludeInCc"),
+                };
+
+                var pipelineInfoObject = (JObject)JsonConvert.DeserializeObject(data.GetValue("PipelineInfo").ToString());
+                var pipelineType = pipelineInfoObject.GetJsonValue<PipelineType>("PipelineType");
 
                 if (pipelineType == PipelineType.Release)
                 {
                     var releaseConfig = new ReleaseConfiguration()
                     {
-                        ProjectId = data.GetValue("ProjectId").ToString(),
-                        ProjectName = data.GetValue("ProjectName").ToString(),
-                        ReleaseId = data.GetValue("ReleaseId").ToObject<int>(),
-                        ServerUri = data.GetValue("ServerUri").ToString(),
-                        RMServerUri = data.GetValue("RMServerUri").ToString(),
-                        DefinitionEnvironmentId = data.GetValue("DefinitionEnvironmentId").ToObject<int>(),
-                        EnvironmentId = data.GetValue("EnvironmentId").ToObject<int>(),
+                        ProjectId = pipelineInfoObject.GetJsonValue<string>("ProjectId"),
+                        ProjectName = pipelineInfoObject.GetJsonValue<string>("ProjectName"),
+                        ReleaseId = pipelineInfoObject.GetJsonValue<int>("ReleaseId"),
+                        ServerUri = pipelineInfoObject.GetJsonValue<string>("ServerUri").ToString(),
+                        RMServerUri = pipelineInfoObject.GetJsonValue<string>("RMServerUri").ToString(),
+                        DefinitionEnvironmentId = pipelineInfoObject.GetJsonValue<int>("DefinitionEnvironmentId"),
+                        EnvironmentId = pipelineInfoObject.GetJsonValue<int>("EnvironmentId"),
                         Credentials = credentials
                     };
 
@@ -159,9 +175,20 @@ namespace EmailReportFunction.Wrappers
             return _reportConfiguration;
         }
 
+
         public IReportMessageGenerator GetReportMessageGenerator(string jsonRequest, ILogger logger)
         {
             return new ReportMessageGenerator(CreateEmailReportConfiguration(jsonRequest, logger), logger);
+        }
+    }
+
+    public static class JsonExtensionMethods
+    {
+
+        public static T GetJsonValue<T>(this JObject jObject, string key)
+        {
+            var jToken = jObject.GetValueOrDefault(key);
+            return jToken == null ? default(T) : jToken.ToObject<T>();
         }
     }
 }

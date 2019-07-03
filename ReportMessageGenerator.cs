@@ -18,7 +18,6 @@ using Microsoft.Extensions.Logging;
 using EmailReportFunction.ViewModel;
 using Microsoft.VisualStudio.Services.Common;
 using Artifact = Microsoft.VisualStudio.Services.ReleaseManagement.WebApi.Contracts.Artifact;
-using EmailReportFunction.DataProviders;
 
 namespace EmailReportFunction
 {
@@ -33,13 +32,13 @@ namespace EmailReportFunction
             _emailReportConfiguration = emailReportConfiguration;
         }
 
-        public async Task<System.Net.Mail.MailMessage> GenerateReportAsync(IPipelineData pipelineData)
+        public async Task<MailMessage> GenerateReportAsync(IPipelineData pipelineData)
         {
             var emailReportDto = new ReleaseEmailReportDto();
             var releaseData = pipelineData as ReleaseData;
             emailReportDto.FailedTestOwners = await pipelineData.GetFailedTestOwnersAsync();
             var filteredResults = await pipelineData.GetFilteredTestsAsync();
-            emailReportDto.FilteredResults = filteredResults.ToList();
+            emailReportDto.FilteredResults = filteredResults == null ? new List<Config.TestResults.TestResultsGroupData>() : filteredResults.ToList();
             emailReportDto.Artifacts = new List<Artifact>(releaseData.Release.Artifacts);
             emailReportDto.Release = releaseData.Release;
             emailReportDto.Environment = releaseData.Environment;
@@ -56,7 +55,7 @@ namespace EmailReportFunction
 
             var msg = new System.Net.Mail.MailMessage { IsBodyHtml = true };
 
-            var mailAddressViewModel = new MailAddressViewModel(_emailReportConfiguration, pipelineData, _logger);
+            var mailAddressViewModel = new MailAddressViewModel(_emailReportConfiguration.MailConfiguration, pipelineData, _logger);
             var recipients = await mailAddressViewModel.GetRecipientAdrressesAsync();
             msg.From = mailAddressViewModel.From;
             msg.To.AddRange(recipients[RecipientType.TO]);

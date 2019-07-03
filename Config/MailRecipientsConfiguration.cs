@@ -11,5 +11,7 @@ namespace EmailReportFunction.Config
         public bool IncludeTestOwners { get; set; }
         public bool IncludeActiveBugOwners { get; set; }
         public bool IncludeCreatedBy { get; set; }
+
+        public static readonly MailRecipientsConfiguration Empty = new MailRecipientsConfiguration();
     }
 }

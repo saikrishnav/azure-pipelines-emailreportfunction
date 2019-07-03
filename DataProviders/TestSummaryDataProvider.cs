@@ -23,13 +23,13 @@ namespace EmailReportFunction.DataProviders
     public class TestSummaryDataProvider : IDataProvider<TestSummaryData>
     {
         private readonly ITcmApiHelper _tcmApiHelper;
-        private readonly EmailReportConfiguration _emailReportConfiguration;
+        private readonly ReportDataConfiguration _reportDataConfiguration;
         private readonly ILogger _logger;
 
-        public TestSummaryDataProvider(ITcmApiHelper tcmApiHelper, EmailReportConfiguration emailReportConfiguration, ILogger logger)
+        public TestSummaryDataProvider(ITcmApiHelper tcmApiHelper, ReportDataConfiguration reportDataConfiguration, ILogger logger)
         {
             _tcmApiHelper = tcmApiHelper;
-            _emailReportConfiguration = emailReportConfiguration;
+            _reportDataConfiguration = reportDataConfiguration;
             _logger = logger;
         }
 
@@ -42,7 +42,7 @@ namespace EmailReportFunction.DataProviders
                 var summary =  //TODO - RetryHelper.Retry(() => 
                     await _tcmApiHelper.GetTestResultSummaryAsync();
 
-                if (_emailReportConfiguration.GroupTestSummaryBy.Contains(TestResultsGroupingType.Priority))
+                if (_reportDataConfiguration.GroupTestSummaryBy.Contains(TestResultsGroupingType.Priority))
                 {
                     var prioritySummary = await GetTestSummaryByPriorityAsync();
                     testSummaryGroups.Add(prioritySummary);

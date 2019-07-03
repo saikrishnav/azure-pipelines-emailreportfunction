@@ -16,31 +16,28 @@ using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.KeyVault.Models;
 using Newtonsoft.Json.Linq;
 using EmailReportFunction.Wrappers;
+using EmailReportFunction.Utils;
 
 namespace EmailReportFunction
 {
     public static class EmailReportTask
     {
-        private static readonly EmailReport _emailReport;
-
-        static EmailReportTask()
-        {
-            _emailReport = new EmailReport(new ReportFactory());
-        }
-
         [FunctionName("EmailReportTask")]
         public static async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req, ILogger log)
+            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req, ILogger logger)
         {
-            log.LogInformation("EmailReportTask: HTTP trigger function started processing a request.");
+            logger.LogInformation("EmailReportTask: HTTP trigger function started processing a request.");
 
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+            var emailReportConfig = RequestHelper.CreateConfiguration(requestBody, logger);
+
+            var reportFactory = new ReportFactory(emailReportConfig, logger);
 
             string exMessage = null;
             bool status = false;
             try
             {
-                status = await _emailReport.GenerateAndSendReport(requestBody, log);
+                status = await new EmailReport(reportFactory).GenerateAndSendReport(emailReportConfig);
             }
             catch(Exception ex)
             {

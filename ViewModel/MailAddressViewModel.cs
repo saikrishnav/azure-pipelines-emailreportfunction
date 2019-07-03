@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Mail;
@@ -22,19 +21,18 @@ namespace EmailReportFunction.ViewModel
 
         private IPipelineData _pipelineData;
 
-        private EmailReportConfiguration _emailReportConfig;
+        private MailConfiguration _mailConfiguration;
 
-        public MailAddressViewModel(EmailReportConfiguration emailReportConfig, IPipelineData pipelineData, ILogger logger)
+        public MailAddressViewModel(MailConfiguration mailConfiguration, IPipelineData pipelineData, ILogger logger)
         {
             _logger = logger;
             _pipelineData = pipelineData;
-            _emailReportConfig = emailReportConfig;
+            _mailConfiguration = mailConfiguration;
         }
 
         public async Task<IDictionary<RecipientType, List<MailAddress>>> GetRecipientAdrressesAsync()
         {
-            var smtpConfiguration = await _emailReportConfig.GetSmtpConfigurationAsync();
-            From = new MailAddress(smtpConfiguration.UserName);
+            From = new MailAddress(MailConfiguration.MailSenderAddress);
             _logger.LogInformation("computing email addresses for to/cc section");
             return await GetMailAddressesAsync();
         }
@@ -71,10 +69,10 @@ namespace EmailReportFunction.ViewModel
             var toAddressHashSet = new HashSet<string>(StringComparer.CurrentCultureIgnoreCase);
             var ccAddressHashSet = new HashSet<string>(StringComparer.CurrentCultureIgnoreCase);
 
-            if (_emailReportConfig.To.IncludeTestOwners || _emailReportConfig.Cc.IncludeTestOwners)
+            if (_mailConfiguration.To.IncludeTestOwners || _mailConfiguration.Cc.IncludeTestOwners)
             {
                 var failedTestOwners = await GetFailedTestOwnersAsync();
-                if (_emailReportConfig.To.IncludeTestOwners)
+                if (_mailConfiguration.To.IncludeTestOwners)
                 {
                     toAddressHashSet.AddRange(failedTestOwners);
                 }
@@ -84,10 +82,10 @@ namespace EmailReportFunction.ViewModel
                 }
             }
 
-            if (_emailReportConfig.To.IncludeActiveBugOwners || _emailReportConfig.Cc.IncludeTestOwners)
+            if (_mailConfiguration.To.IncludeActiveBugOwners || _mailConfiguration.Cc.IncludeTestOwners)
             {
                 var activeBugOwners = await GetActiveBugOwnersForFailedTestsAsync();
-                if (_emailReportConfig.To.IncludeActiveBugOwners)
+                if (_mailConfiguration.To.IncludeActiveBugOwners)
                 {
                     toAddressHashSet.AddRange(activeBugOwners);
                 }
@@ -98,11 +96,11 @@ namespace EmailReportFunction.ViewModel
             }
 
 
-            if (_emailReportConfig.To.IncludeChangesetOwners || _emailReportConfig.Cc.IncludeChangesetOwners)
+            if (_mailConfiguration.To.IncludeChangesetOwners || _mailConfiguration.Cc.IncludeChangesetOwners)
             {
                 var associatedChanges = await _pipelineData.GetAssociatedChangesAsync();
                 var changeSetOwners = GetChangesetOwners(associatedChanges);
-                if (_emailReportConfig.To.IncludeActiveBugOwners)
+                if (_mailConfiguration.To.IncludeActiveBugOwners)
                 {
                     toAddressHashSet.AddRange(changeSetOwners);
                 }
@@ -112,17 +110,17 @@ namespace EmailReportFunction.ViewModel
                 }
             }
 
-            if (_emailReportConfig.To.IncludeCreatedBy)
+            if (_mailConfiguration.To.IncludeCreatedBy)
             {
                 toAddressHashSet.Add(GetCreatedBy());
             }
-            else if(_emailReportConfig.Cc.IncludeCreatedBy)
+            else if(_mailConfiguration.Cc.IncludeCreatedBy)
             {
                 ccAddressHashSet.Add(GetCreatedBy());
             }
 
-            toAddressHashSet.AddRange(GetEmailAddressesFromString(_emailReportConfig.To.DefaultRecipients));
-            ccAddressHashSet.AddRange(GetEmailAddressesFromString(_emailReportConfig.Cc.DefaultRecipients));
+            toAddressHashSet.AddRange(GetEmailAddressesFromString(_mailConfiguration.To.DefaultRecipients));
+            ccAddressHashSet.AddRange(GetEmailAddressesFromString(_mailConfiguration.Cc.DefaultRecipients));
 
             recipientAdrresses.Add(RecipientType.TO, GetMailAddresses(toAddressHashSet)
                 .DistinctBy(mailAddress => mailAddress.Address.ToLowerInvariant())

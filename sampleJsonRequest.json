@@ -1,0 +1,32 @@
+{
+  "System.AccessToken": "",  
+
+  "PipelineInfo":  {
+         "PipelineType": "Release",
+         "ProjectId": "b924d696-3eae-4116-8443-9a18392d8544",
+         "ProjectName": "AzureDevOps",
+         "Id": 10945975,
+         "ServerUri": "https://dev.azure.com/mseng/",
+         "RMServerUri": "https://vsrm.dev.azure.com/mseng/",
+         "DefinitionEnvironmentId": 9521,
+         "EnvironmentId": 126480505
+       },
+  "EmailConfiguration": {
+  	    "MailSubject": "Azure Function Email Report Task",
+	      "SendMailCondition": "Always",
+        "ToAddresses": "svajjala@microsoft.com",
+        "IncludeInTo": "",
+        "CcAddresses": "",
+        "IncludeInCc": ""
+      },
+   
+   "ReportDataConfiguration": {
+    "IncludeCommits": "true",
+    "GroupTestResultsBy": "Priority",
+    "IncludeOthersInTotal": "true",
+    "MaxFailuresToShow": 5,
+    "GroupTestSummaryBy": "Run",
+    "IncludeResults": "1",
+    "UsePreviousEnvironment": "true"
+    }  
+  }

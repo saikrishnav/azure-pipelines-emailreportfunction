@@ -35,7 +35,7 @@ namespace EmailReportFunction.ViewModel
 
         private void SetGroupName(TestResultsGroupData resultsGroupData, EmailReportConfiguration emailReportConfig)
         {
-            var groupTestResultsBy = emailReportConfig.TestResultsConfiguration.GroupingType;
+            var groupTestResultsBy = emailReportConfig.ReportDataConfiguration.GroupTestResultsBy;
 
             GroupName = groupTestResultsBy == TestResultsGroupingType.Priority ? 
                 PriorityDisplayNameHelper.GetDisplayName(resultsGroupData.GroupName) :

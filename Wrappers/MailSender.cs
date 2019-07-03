@@ -1,5 +1,6 @@
 ﻿using EmailReportFunction.Config;
 using EmailReportFunction.Config.Pipeline;
+using EmailReportFunction.DataProviders;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Net;
@@ -12,19 +13,19 @@ namespace EmailReportFunction.Wrappers
     public class MailSender : IMailSender
     {
         private ILogger _logger;
-        private EmailReportConfiguration _emailReportConfiguration;
+        private IDataProvider<SmtpConfiguration> _smtpDataProvider;
 
-        public MailSender(EmailReportConfiguration reportConfig, ILogger logger)
+        public MailSender(IDataProvider<SmtpConfiguration> smtpDataProvider, ILogger logger)
         {
             _logger = logger;
-            _emailReportConfiguration = reportConfig;
+            _smtpDataProvider = smtpDataProvider;
         }
 
         public async Task<bool> SendMailAsync(MailMessage message)
         {
             try
             {
-                var smtpConfiguration = await _emailReportConfiguration.GetSmtpConfigurationAsync();
+                var smtpConfiguration = await _smtpDataProvider.GetDataAsync();
                 var smtpInfo = new UriBuilder(smtpConfiguration.SmtpHost);               
                 using (var smtpClient = new SmtpClient(smtpInfo.Host))
                 {

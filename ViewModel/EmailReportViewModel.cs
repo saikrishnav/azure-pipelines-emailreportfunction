@@ -92,8 +92,9 @@ namespace EmailReportFunction.ViewModel
             HasCanceledPhases = emailReportDto.HasCanceledPhases();
             InitializePhases(emailReportDto);
 
-            EmailSubject = GetMailSubject(emailReportDto, emailReportConfiguration);
-            HasFailedTests = emailReportDto.HasFailedTests(emailReportConfiguration.IncludeOthersInTotalCount);
+            var reportDataConfiguration = emailReportConfiguration.ReportDataConfiguration;
+            EmailSubject = GetMailSubject(emailReportDto, emailReportConfiguration.MailConfiguration, reportDataConfiguration);
+            HasFailedTests = emailReportDto.HasFailedTests(reportDataConfiguration.IncludeOthersInTotal);
 
             var summaryGroupDto = emailReportDto.TestSummaryGroups?.First();
 
@@ -101,13 +102,13 @@ namespace EmailReportFunction.ViewModel
             {
                 AllTests = new TestResultSummaryViewModel(emailReportDto.Summary,
                        config,
-                       emailReportConfiguration.IncludeOthersInTotalCount);
+                       reportDataConfiguration.IncludeOthersInTotal);
             }
 
-            InitializeSummaryGroupViewModel(emailReportDto, emailReportConfiguration, config);
-            ShowAssociatedChanges = emailReportConfiguration.IncludeAssociatedChanges;
+            InitializeSummaryGroupViewModel(emailReportDto, emailReportConfiguration.ReportDataConfiguration, config);
+            ShowAssociatedChanges = reportDataConfiguration.IncludeCommits;
 
-            if (emailReportConfiguration.IncludeAssociatedChanges)
+            if (ShowAssociatedChanges)
             {
                 InitializeAssociatedChanges(emailReportDto, config);
             }
@@ -170,10 +171,9 @@ namespace EmailReportFunction.ViewModel
             }
         }
 
-        private string GetMailSubject(EmailReportDto emailReportDto,
-            EmailReportConfiguration emailReportConfig)
+        private string GetMailSubject(EmailReportDto emailReportDto, MailConfiguration mailConfiguration, ReportDataConfiguration reportDataConfiguration)
         {
-            var userDefinedSubject = emailReportConfig.EmailSubject;
+            var userDefinedSubject = mailConfiguration.EmailSubject;
 
             if (string.IsNullOrWhiteSpace(userDefinedSubject))
             {
@@ -184,8 +184,7 @@ namespace EmailReportFunction.ViewModel
 
             if (passPercentageMatchRegex.IsMatch(userDefinedSubject))
             {
-                var passPercentage = GetPassPercentage(emailReportDto,
-                    emailReportConfig.IncludeOthersInTotalCount);
+                var passPercentage = GetPassPercentage(emailReportDto, reportDataConfiguration.IncludeOthersInTotal);
 
                 subject = passPercentageMatchRegex.Replace(userDefinedSubject, passPercentage);
             }
@@ -231,20 +230,18 @@ namespace EmailReportFunction.ViewModel
             return TestResultsHelper.GetTestOutcomePercentageString(passedTests, totalTests);
         }
 
-        private void InitializeSummaryGroupViewModel(EmailReportDto emailReportDto,
-            EmailReportConfiguration emailReportConfiguration, PipelineConfiguration config)
+        private void InitializeSummaryGroupViewModel(EmailReportDto emailReportDto, ReportDataConfiguration reportDataConfiguration, PipelineConfiguration config)
         {
             SummaryGroups = new List<TestSummaryGroupViewModel>();
             if (emailReportDto.TestSummaryGroups != null)
             {
                 foreach (var testSummaryGroup in emailReportDto.TestSummaryGroups)
                 {
-                    if (emailReportConfiguration.GroupTestSummaryBy
+                    if (reportDataConfiguration.GroupTestSummaryBy
                         .Any(group => group == testSummaryGroup.GroupingType))
                     {
                         // TODO - Log.LogVerbose($"Creating summary group viewmodel for {testSummaryGroupDto.GroupedBy}");
-                        SummaryGroups.Add(new TestSummaryGroupViewModel(testSummaryGroup, config,
-                            emailReportConfiguration.IncludeOthersInTotalCount));
+                        SummaryGroups.Add(new TestSummaryGroupViewModel(testSummaryGroup, config, reportDataConfiguration.IncludeOthersInTotal));
                     }
                 }
             }

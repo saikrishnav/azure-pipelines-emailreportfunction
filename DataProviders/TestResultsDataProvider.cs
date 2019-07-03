@@ -1,4 +1,5 @@
-﻿using EmailReportFunction.Config.TestResults;
+﻿using EmailReportFunction.Config;
+using EmailReportFunction.Config.TestResults;
 using EmailReportFunction.DataProviders;
 using EmailReportFunction.Exceptions;
 using EmailReportFunction.Utils;
@@ -21,18 +22,18 @@ namespace EmailReportFunction.DataProviders
     {
         private readonly ITcmApiHelper _tcmApiHelper;
         private readonly IWorkItemTrackingApiHelper _workItemTrackingApiHelper;
-        private readonly TestResultsConfiguration _testResultsConfiguration;
+        private readonly ReportDataConfiguration _reportDataConfiguration;
         private readonly ILogger _logger;
 
         public TestResultsDataProvider(ITcmApiHelper tcmApiHelper,
             IWorkItemTrackingApiHelper workItemTrackingApiHelper,
-            TestResultsConfiguration testResultsConfiguration,
+            ReportDataConfiguration reportDataConfiguration,
             ILogger logger)
         {
             _logger = logger;
             _tcmApiHelper = tcmApiHelper;
             _workItemTrackingApiHelper = workItemTrackingApiHelper;
-            _testResultsConfiguration = testResultsConfiguration;
+            _reportDataConfiguration = reportDataConfiguration;
         }
 
         public async Task<IEnumerable<TestResultsGroupData>> GetDataAsync()
@@ -51,17 +52,17 @@ namespace EmailReportFunction.DataProviders
         private List<TestOutcome> GetIncludedOutcomes()
         {
             var includedOutcomes = new List<TestOutcome>();
-            if (_testResultsConfiguration.IncludeFailedTests)
+            if (_reportDataConfiguration.IncludeFailedTests)
             {
                 includedOutcomes.Add(TestOutcome.Failed);
             }
 
-            if (_testResultsConfiguration.IncludeOtherTests)
+            if (_reportDataConfiguration.IncludeOtherTests)
             {
                 includedOutcomes.AddRange(EnumHelper.GetEnumsExcept(TestOutcome.Failed, TestOutcome.Passed));
             }
 
-            if (_testResultsConfiguration.IncludePassedTests)
+            if (_reportDataConfiguration.IncludePassedTests)
             {
                 includedOutcomes.Add(TestOutcome.Passed);
             }
@@ -71,10 +72,10 @@ namespace EmailReportFunction.DataProviders
 
         private async Task<TestResultsGroupData[]> GetFilteredTestResultsAsync()
         {
-            if (_testResultsConfiguration.IncludeFailedTests || _testResultsConfiguration.IncludeOtherTests ||
-                _testResultsConfiguration.IncludePassedTests)
+            if (_reportDataConfiguration.IncludeFailedTests || _reportDataConfiguration.IncludeOtherTests ||
+                _reportDataConfiguration.IncludePassedTests)
             {
-                var groupBy = TestResultsConstants.GetName(_testResultsConfiguration.GroupingType);
+                var groupBy = TestResultsConstants.GetName(_reportDataConfiguration.GroupTestResultsBy);
                 List<TestOutcome> includedOutcomes = GetIncludedOutcomes();
 
                 var resultIdsToFetch = await _tcmApiHelper.GetTestSummaryAsync(groupBy, includedOutcomes.ToArray());

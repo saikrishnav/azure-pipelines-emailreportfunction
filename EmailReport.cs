@@ -27,16 +27,11 @@ namespace EmailReportFunction
             this._reportFactory = reportFactory;
         }
 
-        public async Task<bool> GenerateAndSendReport(string jsonRequest, ILogger logger)
+        public async Task<bool> GenerateAndSendReport(EmailReportConfiguration emailReportConfiguration)
         {
-            var dataProvider = _reportFactory.GetPipelineDataProvider(jsonRequest, logger);
-            var pipelineData = await dataProvider.GetDataAsync();
-
-            var reportGenerator = _reportFactory.GetReportMessageGenerator(jsonRequest, logger);
-            var message = await reportGenerator.GenerateReportAsync(pipelineData);
-
-            var mailSender = _reportFactory.GetMailSender(jsonRequest, logger);
-            return await mailSender.SendMailAsync(message);
+            var pipelineData = await _reportFactory.GetPipelineDataProvider().GetDataAsync();
+            var message = await _reportFactory.ReportMessageGenerator.GenerateReportAsync(pipelineData);
+            return await _reportFactory.GetMailSender().SendMailAsync(message);
         }
     }
 }

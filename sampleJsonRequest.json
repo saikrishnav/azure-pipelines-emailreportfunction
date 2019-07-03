@@ -1,5 +1,5 @@
 {
-  "System.AccessToken": "rbj7zjw7iiobwl3uucgfriy3zqif3u6a7mutyys5hgixbcht2uoq",  
+  "System.AccessToken": "",  
 
   "PipelineInfo":  {
          "PipelineType": "Release",
@@ -12,11 +12,12 @@
          "EnvironmentId": 126480505
        },
   "EmailConfiguration": {
-	"SendMailCondition": "Always",
+  	    "MailSubject": "Azure Function Email Report Task",
+	      "SendMailCondition": "Always",
         "ToAddresses": "svajjala@microsoft.com",
         "IncludeInTo": "",
         "CcAddresses": "",
-        "IncludeInCc": "",
+        "IncludeInCc": ""
       },
    
    "ReportDataConfiguration": {
@@ -25,7 +26,7 @@
     "IncludeOthersInTotal": "true",
     "MaxFailuresToShow": 5,
     "GroupTestSummaryBy": "Run",
-    "IncludeResults": "true",
+    "IncludeResults": "1",
     "UsePreviousEnvironment": "true"
     }  
-}
+  }

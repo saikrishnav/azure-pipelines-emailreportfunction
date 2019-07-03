@@ -15,14 +15,15 @@ namespace EmailReportFunction
     {
         [FunctionName("EmailReportTask")]
         public static async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req, ILogger logger)
+            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req, ILogger logger, ExecutionContext executionContext)
         {
             logger.LogInformation("EmailReportTask: HTTP trigger function started processing a request.");
 
             string resultStr = string.Empty;
             if (req.Method == HttpMethods.Get)
             {
-                resultStr = "Here's a Sample JSON request:\r\n" + File.ReadAllText("sampleJsonRequest.json");
+                string jsonFilePath = Path.Combine(executionContext.FunctionAppDirectory, "sampleJsonRequest.json");
+                resultStr = "Here's a Sample JSON request:\r\n" + File.ReadAllText(jsonFilePath);
             }
             else if (req.Method == HttpMethods.Post)
             {

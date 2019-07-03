@@ -126,7 +126,11 @@ namespace EmailReportFunction.Wrappers
 
         public abstract Task<TestResultsDetails> GetTestSummaryAsync(string groupBy, params TestOutcome[] includeOutcomes);
 
-        public abstract Task<TestResultSummary> QueryTestResultsReportAsync();
+        public abstract Task<TestResultsDetails> GetTestSummaryAsync(PipelineConfiguration pipelineConfiguration, string groupBy, params TestOutcome[] includeOutcomes);
+
+        public abstract Task<TestResultSummary> QueryTestResultsReportAsync(PipelineConfiguration releaseConfig = null);
+
+        public abstract Task<TestResultsQuery> GetTestResultsByQueryAsync(TestResultsQuery query);
 
         #region Helper methods
 

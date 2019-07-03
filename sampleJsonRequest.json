@@ -1,32 +1,37 @@
 {
-  "System.AccessToken": "",  
+  // AccessToken for the run
+  //SSL enabled
+  "System.AccessToken": "",
 
-  "PipelineInfo":  {
-         "PipelineType": "Release",
-         "ProjectId": "b924d696-3eae-4116-8443-9a18392d8544",
-         "ProjectName": "AzureDevOps",
-         "Id": 10945975,
-         "ServerUri": "https://dev.azure.com/mseng/",
-         "RMServerUri": "https://vsrm.dev.azure.com/mseng/",
-         "DefinitionEnvironmentId": 9521,
-         "EnvironmentId": 126480505
-       },
+  "PipelineInfo": {
+    "PipelineType": "", // Build/Release,
+    "ProjectId": "", //Azure devOps Account ProjectId,
+    "ProjectName": "" //Azure DevOps Account ProjectName",
+    "Id": "", // Pipeline Id (not definition id)
+    "ServerUri": "https://dev.azure.com/{account}/",
+    "RMServerUri": "https://vsrm.dev.azure.com/{account}/", //typically 
+    "DefinitionEnvironmentId": 1111, // Environment Def Id
+    "EnvironmentId": 123456789 // Environment Id for the specific run
+  },
   "EmailConfiguration": {
-  	    "MailSubject": "Azure Function Email Report Task",
-	      "SendMailCondition": "Always",
-        "ToAddresses": "svajjala@microsoft.com",
-        "IncludeInTo": "",
-        "CcAddresses": "",
-        "IncludeInCc": ""
-      },
-   
-   "ReportDataConfiguration": {
-    "IncludeCommits": "true",
-    "GroupTestResultsBy": "Priority",
-    "IncludeOthersInTotal": "true",
-    "MaxFailuresToShow": 5,
-    "GroupTestSummaryBy": "Run",
-    "IncludeResults": "1",
-    "UsePreviousEnvironment": "true"
-    }  
+    "MailSubject": "Azure Function Email Report Task",
+    "SendMailCondition": "Always", // Allowed values -   "On Failure", "On Success", "On New Failures Only", "Always"
+    // One of the below should be filled - 
+    "ToAddresses": "", // email addresses - abc@xyz.com;def@xyz.com
+    "CcAddresses": "",
+
+    // Include configuration - Multiple values allowed - comma seperated
+    "IncludeInTo": "", // Allowed values - "1": "Include Commit Owners", "2": "Include Failed Test Owners", "3": "Include Active Bug Owners", "4": "Include Created By"
+    "IncludeInCc": "" // Same as above 
+  },
+
+  "ReportDataConfiguration": {
+    "IncludeCommits": "false", // or true
+    "GroupTestResultsBy": "Priority", // Priority/Run/Team
+    "IncludeOthersInTotal": "false", // or true
+    "MaxFailuresToShow": 5, // Number of test failures to show up in email
+    "GroupTestSummaryBy": "Run", // test summary pane on email top - grouping. allowed values - Priority/Run/Team (Multiple values allowed - comma seperated)
+    "IncludeResults": "1", //    "1": "Failed Tests",   "2": "Other Tests", - 
+    "UsePreviousEnvironment": "true" // Compiles report for previous stage of the EnvironmentId specified
   }
+}

@@ -18,6 +18,7 @@ using Microsoft.Extensions.Logging;
 using EmailReportFunction.ViewModel;
 using Microsoft.VisualStudio.Services.Common;
 using Artifact = Microsoft.VisualStudio.Services.ReleaseManagement.WebApi.Contracts.Artifact;
+using EmailReportFunction.Config.TestResults;
 
 namespace EmailReportFunction
 {
@@ -36,24 +37,35 @@ namespace EmailReportFunction
         {
             var emailReportDto = new ReleaseEmailReportDto();
             var releaseData = pipelineData as ReleaseData;
-            emailReportDto.FailedTestOwners = await pipelineData.GetFailedTestOwnersAsync();
-            var filteredResults = await pipelineData.GetFilteredTestsAsync();
-            emailReportDto.FilteredResults = filteredResults == null ? new List<Config.TestResults.TestResultsGroupData>() : filteredResults.ToList();
+
+            var failedTestOwnersTask = pipelineData.GetFailedTestOwnersAsync();
+            var filteredTestDataTask = pipelineData.GetFilteredTestsAsync();
+            var phaseDataTask = releaseData.GetPhasesAsync();
+            var associatedChangesTask = pipelineData.GetAssociatedChangesAsync();
+            var testSummaryDataTask = pipelineData.GetTestSummaryDataAsync();
+
+            await Task.WhenAll(failedTestOwnersTask, filteredTestDataTask, phaseDataTask, associatedChangesTask, testSummaryDataTask);
+
+            emailReportDto.FailedTestOwners = failedTestOwnersTask.Result;
+            var filteredResultData = filteredTestDataTask.Result;
+            emailReportDto.FilteredResults = (filteredResultData == null || filteredResultData.FilteredTests == null ) 
+                ? new List<TestResultsGroupData>() 
+                : filteredResultData.FilteredTests.ToList();
             emailReportDto.Artifacts = new List<Artifact>(releaseData.Release.Artifacts);
             emailReportDto.Release = releaseData.Release;
             emailReportDto.Environment = releaseData.Environment;
-            emailReportDto.Phases = await releaseData.GetPhasesAsync();
-            emailReportDto.AssociatedChanges = await releaseData.GetAssociatedChangesAsync();
+            emailReportDto.Phases = phaseDataTask.Result;
+            emailReportDto.AssociatedChanges = associatedChangesTask.Result;
+
             emailReportDto.LastCompletedRelease = await releaseData.GetLastCompletedReleaseAsync();
             emailReportDto.LastCompletedEnvironment = await releaseData.GetLastCompletedEnvironmentAsync();
             emailReportDto.CreatedBy = releaseData.Release.CreatedBy;
 
-            var summaryData = await pipelineData.GetTestSummaryDataAsync();
+            var summaryData = testSummaryDataTask.Result;
             emailReportDto.Summary = summaryData.ResultSummary;
             emailReportDto.TestSummaryGroups = summaryData.TestSummaryGroups;
-            // TODO - Has FilteredResults
 
-            var msg = new System.Net.Mail.MailMessage { IsBodyHtml = true };
+            var msg = new MailMessage { IsBodyHtml = true };
 
             var mailAddressViewModel = new MailAddressViewModel(_emailReportConfiguration.MailConfiguration, pipelineData, _logger);
             var recipients = await mailAddressViewModel.GetRecipientAdrressesAsync();

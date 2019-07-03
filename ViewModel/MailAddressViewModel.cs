@@ -151,13 +151,13 @@ namespace EmailReportFunction.ViewModel
 
         private async Task<List<string>> GetActiveBugOwnersForFailedTestsAsync()
         {
-            var filteredTests = await _pipelineData.GetFilteredTestsAsync();
-            if (filteredTests == null)
+            var filteredTestData = await _pipelineData.GetFilteredTestsAsync();
+            if (filteredTestData == null || filteredTestData.FilteredTests == null)
             {
                 return new List<string>();
             }
 
-            List<string> bugOwners = filteredTests
+            List<string> bugOwners = filteredTestData.FilteredTests
                 .Where(group => group.TestResults.ContainsKey(TestOutcome.Failed))
                 .SelectMany(group => group.TestResults[TestOutcome.Failed])
                 .SelectMany(result => result.AssociatedBugs)

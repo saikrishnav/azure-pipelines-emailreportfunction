@@ -20,7 +20,7 @@ namespace EmailReportFunction.DataProviders
         public ReleaseDataProvider(ReleaseConfiguration pipelineConfiguration, 
             IReleaseHttpClientWrapper releaseHttpClient, 
             IDataProvider<List<IdentityRef>> failedTestOwnersDataProvider,
-            IDataProvider<IEnumerable<TestResultsGroupData>> testResultsDataProvider,
+            IDataProvider<FilteredTestResultData> testResultsDataProvider,
             IDataProvider<TestSummaryData> testSummaryDataProvider,
             ILogger logger)
         {
@@ -35,7 +35,7 @@ namespace EmailReportFunction.DataProviders
         private ReleaseConfiguration _releaseConfiguration;
         private IReleaseHttpClientWrapper _releaseHttpClient;
         private IDataProvider<List<IdentityRef>> _failedTestOwnersDataProvider;
-        private IDataProvider<IEnumerable<TestResultsGroupData>> _testResultsDataProvider;
+        private IDataProvider<FilteredTestResultData> _testResultsDataProvider;
         private IDataProvider<TestSummaryData> _testSummaryDataProvider;
         private ILogger _logger;
 

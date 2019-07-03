@@ -18,7 +18,7 @@ namespace EmailReportFunction.Config.Pipeline
 
         public ReleaseData(Release release, IReleaseDataProvider dataProvider, 
             IDataProvider<List<IdentityRef>> failedTestOwnersDataProvider,
-            IDataProvider<IEnumerable<TestResultsGroupData>> testResultsDataProvider,
+            IDataProvider<FilteredTestResultData> testResultsDataProvider,
             IDataProvider<TestSummaryData> testSummaryDataProvider)
         {
             _release = release;
@@ -31,7 +31,7 @@ namespace EmailReportFunction.Config.Pipeline
         private Release _release;
         private IReleaseDataProvider _dataProvider;
         private IDataProvider<List<IdentityRef>> _failedTestOwnersDataProvider;
-        private IDataProvider<IEnumerable<TestResultsGroupData>> _testResultsDataProvider;
+        private IDataProvider<FilteredTestResultData> _testResultsDataProvider;
         private IDataProvider<TestSummaryData> _testSummaryDataProvider;
         private ReleaseEnvironment _releaseEnvironment;
 
@@ -87,7 +87,7 @@ namespace EmailReportFunction.Config.Pipeline
             return await _failedTestOwnersDataProvider.GetDataAsync();
         }
 
-        public async Task<IEnumerable<TestResultsGroupData>> GetFilteredTestsAsync()
+        public async Task<FilteredTestResultData> GetFilteredTestsAsync()
         {
             return await _testResultsDataProvider.GetDataAsync();
         }

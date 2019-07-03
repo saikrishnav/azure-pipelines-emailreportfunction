@@ -107,7 +107,7 @@ namespace EmailReportFunction.Wrappers
             return new FailedTestOwnersDataProvider(this.TcmApiHelper, _logger);
         }
 
-        private IDataProvider<IEnumerable<TestResultsGroupData>> GetTestResultsDataProvider()
+        private IDataProvider<FilteredTestResultData> GetTestResultsDataProvider()
         {
             var witHelper = GetWorkItemTrackingApiHelper(_emailReportConfiguration.PipelineConfiguration, _logger);
             var tcmApiHelper = GetTcmApiHelper(_emailReportConfiguration, _logger);

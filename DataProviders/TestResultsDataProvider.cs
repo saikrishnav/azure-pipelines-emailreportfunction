@@ -18,7 +18,14 @@ using WorkItemReference = Microsoft.TeamFoundation.TestManagement.WebApi.WorkIte
 
 namespace EmailReportFunction.DataProviders
 {
-    public class TestResultsDataProvider : IDataProvider<IEnumerable<TestResultsGroupData>>
+    public class FilteredTestResultData
+    {
+        public IEnumerable<TestResultsGroupData> FilteredTests { get; set; }
+
+        public bool HasFilteredTests { get; set; }
+    }
+
+    public class TestResultsDataProvider : IDataProvider<FilteredTestResultData>
     {
         private readonly ITcmApiHelper _tcmApiHelper;
         private readonly IWorkItemTrackingApiHelper _workItemTrackingApiHelper;
@@ -36,7 +43,7 @@ namespace EmailReportFunction.DataProviders
             _reportDataConfiguration = reportDataConfiguration;
         }
 
-        public async Task<IEnumerable<TestResultsGroupData>> GetDataAsync()
+        public async Task<FilteredTestResultData> GetDataAsync()
         {
             using (new PerformanceMeasurementBlock("In TestResultsDataProvider", _logger))
             {
@@ -70,20 +77,22 @@ namespace EmailReportFunction.DataProviders
             return includedOutcomes;
         }
 
-        private async Task<TestResultsGroupData[]> GetFilteredTestResultsAsync()
+        private async Task<FilteredTestResultData> GetFilteredTestResultsAsync()
         {
             if (_reportDataConfiguration.IncludeFailedTests || _reportDataConfiguration.IncludeOtherTests ||
                 _reportDataConfiguration.IncludePassedTests)
             {
                 var groupBy = TestResultsConstants.GetName(_reportDataConfiguration.GroupTestResultsBy);
-                List<TestOutcome> includedOutcomes = GetIncludedOutcomes();
+                var includedOutcomes = GetIncludedOutcomes();
 
                 var resultIdsToFetch = await _tcmApiHelper.GetTestSummaryAsync(groupBy, includedOutcomes.ToArray());
+                var filteredTests = await GetTestResultsWithWorkItemsAsync(resultIdsToFetch);
 
-                //emailReportDto.HasFilteredTests = FilterTestResults(resultIdsToFetch,
-                //    testResultsConfiguration.MaxItemsToShow);
-
-                return await GetTestResultsWithWorkItemsAsync(resultIdsToFetch);
+                return new FilteredTestResultData()
+                {
+                    FilteredTests = filteredTests,
+                    HasFilteredTests = FilterTestResults(resultIdsToFetch, _reportDataConfiguration.MaxFailuresToShow)
+                };
             }
             return null;
         }
@@ -115,6 +124,29 @@ namespace EmailReportFunction.DataProviders
                 });
 
             return filteredTestResultGroups;
+        }
+
+        private bool FilterTestResults(TestResultsDetails resultIdsToFetch, int maxItems)
+        {
+            var hasFiltered = false;
+            var remainingItems = maxItems;
+            foreach (TestResultsDetailsForGroup group in resultIdsToFetch.ResultsForGroup)
+            {
+                var currentItemsSize = group.Results.Count;
+                if (currentItemsSize > remainingItems)
+                {
+                    hasFiltered = true;
+                    List<TestCaseResult> results = group.Results.ToList();
+                    var itemCountToRemove = currentItemsSize - remainingItems;
+                    results.RemoveLastNItems(itemCountToRemove);
+                    group.Results = results;
+                }
+                remainingItems -= group.Results.Count;
+            }
+
+            resultIdsToFetch.ResultsForGroup =
+                resultIdsToFetch.ResultsForGroup.Where(group => group.Results.Any()).ToList();
+            return hasFiltered;
         }
 
         private async Task<TestResultData[]> GetTestResultsWithBugRefsAsync(TestResultsDetailsForGroup resultsForGroup)

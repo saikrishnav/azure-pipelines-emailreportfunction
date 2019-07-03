@@ -17,7 +17,7 @@ namespace EmailReportFunction.Config.Pipeline
 
         Task<List<IdentityRef>> GetFailedTestOwnersAsync();
 
-        Task<IEnumerable<TestResultsGroupData>> GetFilteredTestsAsync();
+        Task<FilteredTestResultData> GetFilteredTestsAsync();
 
         Task<TestSummaryData> GetTestSummaryDataAsync();
     }

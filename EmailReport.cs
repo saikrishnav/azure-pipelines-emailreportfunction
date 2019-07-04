@@ -29,9 +29,8 @@ namespace EmailReportFunction
 
         public async Task<bool> GenerateAndSendReport(EmailReportConfiguration emailReportConfiguration)
         {
-            var pipelineData = await _reportFactory.GetPipelineDataProvider().GetDataAsync();
-            var message = await _reportFactory.ReportMessageGenerator.GenerateReportAsync(pipelineData);
-            return await _reportFactory.GetMailSender().SendMailAsync(message);
+            var message = await _reportFactory.ReportMessageGenerator.GenerateReportAsync();
+            return await _reportFactory.MailSender.SendMailAsync(message);
         }
     }
 }

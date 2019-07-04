@@ -19,6 +19,7 @@ using EmailReportFunction.ViewModel;
 using Microsoft.VisualStudio.Services.Common;
 using Artifact = Microsoft.VisualStudio.Services.ReleaseManagement.WebApi.Contracts.Artifact;
 using EmailReportFunction.Config.TestResults;
+using EmailReportFunction.DataProviders;
 
 namespace EmailReportFunction
 {
@@ -26,15 +27,19 @@ namespace EmailReportFunction
     {
         private ILogger _logger;
         private EmailReportConfiguration _emailReportConfiguration;
+        private IDataProviderFactory _dataProviderFactory;
 
-        public ReportMessageGenerator(EmailReportConfiguration emailReportConfiguration, ILogger logger)
+        public ReportMessageGenerator(EmailReportConfiguration emailReportConfiguration, IDataProviderFactory dataProviderFactory, ILogger logger)
         {
             _logger = logger;
             _emailReportConfiguration = emailReportConfiguration;
+            _dataProviderFactory = dataProviderFactory;
         }
 
-        public async Task<MailMessage> GenerateReportAsync(IPipelineData pipelineData)
+        public async Task<MailMessage> GenerateReportAsync()
         {
+            var pipelineData = await _dataProviderFactory.GetDataProvider<IPipelineData>().GetDataAsync();
+            
             var emailReportDto = new ReleaseEmailReportDto();
             var releaseData = pipelineData as ReleaseData;
 
@@ -84,7 +89,6 @@ namespace EmailReportFunction
             _logger.LogInformation("Generated view model");
 
             msg.Subject = emailReportViewModel.EmailSubject;
-
             msg.Body = GenerateBodyFromViewModel(emailReportViewModel);
 
             return msg;

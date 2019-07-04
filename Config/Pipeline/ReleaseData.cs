@@ -16,7 +16,8 @@ namespace EmailReportFunction.Config.Pipeline
         public const string ReleaseEnvironmentIdString = "ReleaseEnvironmentId";
         public const string UsePrevReleaseEnvironmentString = "UsePrevReleaseEnvironment";
 
-        public ReleaseData(Release release, IReleaseDataProvider dataProvider, 
+        public ReleaseData(Release release, 
+            IReleaseDataProvider dataProvider, 
             IDataProvider<List<IdentityRef>> failedTestOwnersDataProvider,
             IDataProvider<FilteredTestResultData> testResultsDataProvider,
             IDataProvider<TestSummaryData> testSummaryDataProvider)
@@ -74,7 +75,7 @@ namespace EmailReportFunction.Config.Pipeline
         public async Task<List<ChangeData>> GetAssociatedChangesAsync()
         {
             await GetLastCompletedReleaseAsync();
-            return await _dataProvider.GetAssociatedChanges(_lastCompletedRelease);
+            return await _dataProvider.GetAssociatedChangesAsync(_lastCompletedRelease);
         }
 
         public async Task<List<PhaseData>> GetPhasesAsync()

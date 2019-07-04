@@ -1,14 +1,13 @@
-﻿using EmailReportFunction.Config.Pipeline;
-using EmailReportFunction.DataProviders;
+﻿using EmailReportFunction.DataProviders;
 
 namespace EmailReportFunction.Wrappers
 {
     public interface IReportFactory
     {
-        IMailSender GetMailSender();
-
-        IDataProvider<IPipelineData> GetPipelineDataProvider();
+        IDataProviderFactory DataProviderFactory { get; }
 
         IReportMessageGenerator ReportMessageGenerator { get; }
+
+        IMailSender MailSender { get; }
     }
 }

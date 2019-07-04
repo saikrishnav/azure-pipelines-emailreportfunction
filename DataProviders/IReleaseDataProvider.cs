@@ -12,11 +12,11 @@ namespace EmailReportFunction.DataProviders
     /// </summary>
     public interface IReleaseDataProvider : IDataProvider<IPipelineData>
     {
-        Task<List<ChangeData>> GetAssociatedChanges(Release lastCompletedRelease);
+        Task<List<ChangeData>> GetAssociatedChangesAsync(Release lastCompletedRelease);
 
-        Task<Release> GetReleaseByLastCompletedEnvironment(Release release, ReleaseEnvironment environment);
+        Task<Release> GetReleaseByLastCompletedEnvironmentAsync(Release release, ReleaseEnvironment environment);
 
-        Task<List<PhaseData>> GetPhases(ReleaseEnvironment environment);
+        Task<List<PhaseData>> GetPhasesAsync(ReleaseEnvironment environment);
 
     }
 }

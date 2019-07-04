@@ -66,7 +66,7 @@ namespace EmailReportFunction.DataProviders
 
         #region IReleaseDataProvider
 
-        public async Task<List<ChangeData>> GetAssociatedChanges(Release lastCompletedRelease)
+        public async Task<List<ChangeData>> GetAssociatedChangesAsync(Release lastCompletedRelease)
         {
             if (lastCompletedRelease == null || (lastCompletedRelease != null && lastCompletedRelease.Id > _releaseConfiguration.ReleaseId))
             {
@@ -78,7 +78,7 @@ namespace EmailReportFunction.DataProviders
             return await GetReleaseChanges(lastCompletedRelease.Id);
         }
 
-        public async Task<Release> GetReleaseByLastCompletedEnvironment(Release release, ReleaseEnvironment environment)
+        public async Task<Release> GetReleaseByLastCompletedEnvironmentAsync(Release release, ReleaseEnvironment environment)
         {
             string artifactAlias = null;
             string branchId = null;
@@ -123,7 +123,7 @@ namespace EmailReportFunction.DataProviders
             return lastRelease;
         }
 
-        public async Task<List<PhaseData>> GetPhases(ReleaseEnvironment environment)
+        public async Task<List<PhaseData>> GetPhasesAsync(ReleaseEnvironment environment)
         {
             var phases = new List<PhaseData>();
             var releaseDeployPhases = environment.GetPhases();

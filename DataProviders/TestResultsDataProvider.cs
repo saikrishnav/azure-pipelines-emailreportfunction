@@ -86,12 +86,13 @@ namespace EmailReportFunction.DataProviders
                 var includedOutcomes = GetIncludedOutcomes();
 
                 var resultIdsToFetch = await _tcmApiHelper.GetTestSummaryAsync(groupBy, includedOutcomes.ToArray());
+                var hasFilteredTests = FilterTestResults(resultIdsToFetch, _reportDataConfiguration.MaxFailuresToShow);
                 var filteredTests = await GetTestResultsWithWorkItemsAsync(resultIdsToFetch);
 
                 return new FilteredTestResultData()
                 {
                     FilteredTests = filteredTests,
-                    HasFilteredTests = FilterTestResults(resultIdsToFetch, _reportDataConfiguration.MaxFailuresToShow)
+                    HasFilteredTests = hasFilteredTests
                 };
             }
             return null;

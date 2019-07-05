@@ -19,7 +19,6 @@ using EmailReportFunction.ViewModel;
 using Microsoft.VisualStudio.Services.Common;
 using Artifact = Microsoft.VisualStudio.Services.ReleaseManagement.WebApi.Contracts.Artifact;
 using EmailReportFunction.Config.TestResults;
-using EmailReportFunction.DataProviders;
 using EmailReportFunction.PostProcessor;
 
 namespace EmailReportFunction

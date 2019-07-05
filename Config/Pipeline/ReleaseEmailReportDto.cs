@@ -9,7 +9,7 @@ using System.Text;
 
 namespace EmailReportFunction.Config.Pipeline
 {
-    public class ReleaseEmailReportDto : EmailReportDto
+    public class ReleaseEmailReportDto : ReportData
     {
         public List<Artifact> Artifacts { get; set; }
 

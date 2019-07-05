@@ -10,6 +10,6 @@ namespace EmailReportFunction
 {
     public interface IReportMessageGenerator
     {
-        Task<MailMessage> GenerateReportAsync();
+        Task<MailMessage> GenerateReportAsync(IPipelineData pipelineData);
     }
 }

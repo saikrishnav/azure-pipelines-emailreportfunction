@@ -61,7 +61,7 @@ namespace EmailReportFunction.Config.Pipeline
         {
             if (_lastCompletedRelease == null)
             {
-                _lastCompletedRelease = await _dataProvider.GetReleaseByLastCompletedEnvironment(_release, this.Environment);
+                _lastCompletedRelease = await _dataProvider.GetReleaseByLastCompletedEnvironmentAsync(_release, this.Environment);
             }
             return _lastCompletedRelease;
         }
@@ -80,7 +80,7 @@ namespace EmailReportFunction.Config.Pipeline
 
         public async Task<List<PhaseData>> GetPhasesAsync()
         {
-            return await _dataProvider.GetPhases(this.Environment);
+            return await _dataProvider.GetPhasesAsync(this.Environment);
         }
 
         public async Task<List<IdentityRef>> GetFailedTestOwnersAsync()

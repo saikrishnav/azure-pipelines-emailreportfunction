@@ -16,7 +16,7 @@ using Microsoft.VisualStudio.Services.WebApi;
 
 namespace EmailReportFunction.PostProcessor
 {
-    internal class SendMailConditionDataProvider : IDataProvider<bool>
+    internal class SendMailConditionPostProcessor : IDataPostProcessor
     {
         private readonly ITcmApiHelper _tcmApiHelper;
 
@@ -24,28 +24,25 @@ namespace EmailReportFunction.PostProcessor
 
         private readonly ILogger _logger;
 
-        private readonly EmailReportDto _emailReportDto;
-
         private readonly List<string> TestResultFieldsToQuery = new List<string>() { TestResultFieldNameConstants.TestCaseReferenceId, TestResultFieldNameConstants.OutcomeConfidence };
 
-        public SendMailConditionDataProvider(EmailReportDto emailReportDto, EmailReportConfiguration emailReportConfiguration, ITcmApiHelper tcmApiHelper, ILogger logger)
+        public SendMailConditionPostProcessor(EmailReportConfiguration emailReportConfiguration, ITcmApiHelper tcmApiHelper, ILogger logger)
         {
             _tcmApiHelper = tcmApiHelper;
             _emailReportConfiguration = emailReportConfiguration;
-            _emailReportDto = emailReportDto;
             _logger = logger;
         }
 
-        public async Task<bool> GetDataAsync()
+        public async Task PostProcessAsync(ReportData emailReportDto)
         {
             var sendMailCondition = _emailReportConfiguration.MailConfiguration.SendMailCondition;
 
-            var shouldSendMail = _emailReportDto.DataMissing || sendMailCondition == SendMailCondition.Always;
+            var shouldSendMail = emailReportDto.DataMissing || sendMailCondition == SendMailCondition.Always;
             if (!shouldSendMail)
             {
-                var hasTestFailures = _emailReportDto.HasFailedTests(_emailReportConfiguration.ReportDataConfiguration.IncludeOthersInTotal);
-                var hasFailedTasks = _emailReportDto.HasFailedTasks();
-                var hasCanceledPhases = _emailReportDto.HasCanceledPhases();
+                var hasTestFailures = emailReportDto.HasFailedTests(_emailReportConfiguration.ReportDataConfiguration.IncludeOthersInTotal);
+                var hasFailedTasks = emailReportDto.HasFailedTasks();
+                var hasCanceledPhases = emailReportDto.HasCanceledPhases();
                 var hasFailure = hasTestFailures || hasFailedTasks || hasCanceledPhases;
 
                 if ((sendMailCondition == SendMailCondition.OnFailure && hasFailure)
@@ -66,16 +63,16 @@ namespace EmailReportFunction.PostProcessor
                     {
                         _logger.LogInformation(
                         $"Looking for new failures, as the user send mail condition is '{sendMailCondition}'.");
-                        var hasPreviousReleaseGotSameFailures = await HasPreviousReleaseGotSameFailuresAsync(_emailReportDto, _emailReportConfiguration.PipelineConfiguration, hasTestFailures, hasFailedTasks);
+                        var hasPreviousReleaseGotSameFailures = await HasPreviousReleaseGotSameFailuresAsync(emailReportDto, _emailReportConfiguration.PipelineConfiguration, hasTestFailures, hasFailedTasks);
                         shouldSendMail = !hasPreviousReleaseGotSameFailures;
                     }
                 }
             }
 
-            return shouldSendMail;
+            emailReportDto.SendMailConditionSatisfied = shouldSendMail;
         }
 
-        public async Task<bool> HasPreviousReleaseGotSameFailuresAsync(EmailReportDto emailReportDto, PipelineConfiguration config, bool hasTestFailures, bool hasFailedTasks)
+        public async Task<bool> HasPreviousReleaseGotSameFailuresAsync(ReportData emailReportDto, PipelineConfiguration config, bool hasTestFailures, bool hasFailedTasks)
         {
             var hasPrevGotSameFailures = emailReportDto.HasPrevGotSameFailures();
             if (hasPrevGotSameFailures.HasValue)

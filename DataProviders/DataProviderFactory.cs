@@ -1,5 +1,6 @@
 ﻿using EmailReportFunction.Config;
 using EmailReportFunction.Config.Pipeline;
+using EmailReportFunction.PostProcessor;
 using EmailReportFunction.Wrappers;
 using EmailReportFunction.Wrappers.Microsoft.EmailTask.EmailReport.Wrappers;
 using Microsoft.Extensions.Logging;
@@ -48,6 +49,19 @@ namespace EmailReportFunction.DataProviders
             }
 
             return dataProvider;
+        }
+
+        private IDataPostProcessor _postProcessor;
+        public IDataPostProcessor PostProcessor
+        {
+            get
+            {
+                if (_postProcessor == null)
+                {
+                    _postProcessor = new SendMailConditionPostProcessor(this._emailReportConfiguration, this.GetTcmApiHelper(), _logger);
+                }
+                return _postProcessor;
+            }
         }
 
         private IDataProvider<SmtpConfiguration> _smtpDataProvider;
@@ -116,17 +130,17 @@ namespace EmailReportFunction.DataProviders
         private IDataProvider<FilteredTestResultData> GetTestResultsDataProvider()
         {
             var witHelper = GetWorkItemTrackingApiHelper(_emailReportConfiguration.PipelineConfiguration, _logger);
-            var tcmApiHelper = GetTcmApiHelper(_emailReportConfiguration, _logger);
+            var tcmApiHelper = GetTcmApiHelper();
             return new TestResultsDataProvider(tcmApiHelper, witHelper, _emailReportConfiguration.ReportDataConfiguration, _logger);
         }
 
-        private ITcmApiHelper GetTcmApiHelper(EmailReportConfiguration emailReportConfiguration, ILogger logger)
+        private ITcmApiHelper GetTcmApiHelper()
         {
-            var pipelineConfiguration = emailReportConfiguration.PipelineConfiguration;
+            var pipelineConfiguration = _emailReportConfiguration.PipelineConfiguration;
             var tcmClient = TestManagementHttpClientWrapper.CreateInstance(pipelineConfiguration.Credentials, pipelineConfiguration.ServerUri);
             if (pipelineConfiguration is ReleaseConfiguration)
             {
-                return new ReleaseTcmApiHelper(tcmClient, emailReportConfiguration, logger);
+                return new ReleaseTcmApiHelper(tcmClient, _emailReportConfiguration, _logger);
             }
             else
             {

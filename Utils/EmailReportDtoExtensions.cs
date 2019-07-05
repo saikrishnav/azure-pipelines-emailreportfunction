@@ -13,7 +13,7 @@ namespace EmailReportFunction.Utils
 {
     public static class EmailReportDtoExtensions
     {
-        public static bool HasFailedTests(this EmailReportDto source, bool includeOthers)
+        public static bool HasFailedTests(this ReportData source, bool includeOthers)
         {
             if (source.Summary == null)
             {
@@ -35,7 +35,7 @@ namespace EmailReportFunction.Utils
             return source.Summary.AggregatedResultsAnalysis.TotalTests > 0;
         }
 
-        public static bool HasCanceledPhases(this EmailReportDto source)
+        public static bool HasCanceledPhases(this ReportData source)
         {
             if (source.Phases == null)
             {
@@ -45,7 +45,7 @@ namespace EmailReportFunction.Utils
             return source.Phases.Any(p => p.Jobs != null && p.Jobs.Any(j => j.JobStatus == TaskStatus.Canceled));
         }
 
-        public static bool HasPassedTests(this EmailReportDto source)
+        public static bool HasPassedTests(this ReportData source)
         {
             if (source.Summary == null)
             {
@@ -56,7 +56,7 @@ namespace EmailReportFunction.Utils
                     source.Summary.AggregatedResultsAnalysis.ResultsByOutcome[TestOutcome.Passed].Count > 0;
         }
 
-        public static void Merge(this EmailReportDto source, EmailReportDto target)
+        public static void Merge(this ReportData source, ReportData target)
         {
             switch (source)
             {
@@ -188,7 +188,7 @@ namespace EmailReportFunction.Utils
             }
         }
 
-        private static TestSummaryGroup GetSummaryGroup(this EmailReportDto source)
+        private static TestSummaryGroup GetSummaryGroup(this ReportData source)
         {
             var summaryGroup = source.TestSummaryGroups?.First();
             if (summaryGroup == null)

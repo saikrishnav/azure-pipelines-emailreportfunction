@@ -1,5 +1,6 @@
 ﻿using EmailReportFunction.Config;
 using EmailReportFunction.DataProviders;
+using EmailReportFunction.PostProcessor;
 using Microsoft.Extensions.Logging;
 
 namespace EmailReportFunction.Wrappers
@@ -25,7 +26,7 @@ namespace EmailReportFunction.Wrappers
             {
                 if (_reportMessageGenerator == null)
                 {
-                    _reportMessageGenerator = new ReportMessageGenerator(_emailReportConfiguration, this.DataProviderFactory, _logger);
+                    _reportMessageGenerator = new ReportMessageGenerator(_emailReportConfiguration, DataProviderFactory.PostProcessor, _logger);
                 }
                 return _reportMessageGenerator;
             }

@@ -20,6 +20,7 @@ using Microsoft.VisualStudio.Services.Common;
 using Artifact = Microsoft.VisualStudio.Services.ReleaseManagement.WebApi.Contracts.Artifact;
 using EmailReportFunction.Config.TestResults;
 using EmailReportFunction.DataProviders;
+using EmailReportFunction.PostProcessor;
 
 namespace EmailReportFunction
 {
@@ -27,19 +28,17 @@ namespace EmailReportFunction
     {
         private ILogger _logger;
         private EmailReportConfiguration _emailReportConfiguration;
-        private IDataProviderFactory _dataProviderFactory;
+        private IDataPostProcessor _dataPostProcessor;
 
-        public ReportMessageGenerator(EmailReportConfiguration emailReportConfiguration, IDataProviderFactory dataProviderFactory, ILogger logger)
+        public ReportMessageGenerator(EmailReportConfiguration emailReportConfiguration, IDataPostProcessor dataPostProcessor, ILogger logger)
         {
             _logger = logger;
             _emailReportConfiguration = emailReportConfiguration;
-            _dataProviderFactory = dataProviderFactory;
+            _dataPostProcessor = dataPostProcessor;
         }
 
-        public async Task<MailMessage> GenerateReportAsync()
-        {
-            var pipelineData = await _dataProviderFactory.GetDataProvider<IPipelineData>().GetDataAsync();
-            
+        public async Task<MailMessage> GenerateReportAsync(IPipelineData pipelineData)
+        {           
             var emailReportDto = new ReleaseEmailReportDto();
             var releaseData = pipelineData as ReleaseData;
 
@@ -70,28 +69,34 @@ namespace EmailReportFunction
             emailReportDto.Summary = summaryData.ResultSummary;
             emailReportDto.TestSummaryGroups = summaryData.TestSummaryGroups;
 
-            var msg = new MailMessage { IsBodyHtml = true };
+            await _dataPostProcessor.PostProcessAsync(emailReportDto);
 
-            var mailAddressViewModel = new MailAddressViewModel(_emailReportConfiguration.MailConfiguration, pipelineData, _logger);
-            var recipients = await mailAddressViewModel.GetRecipientAdrressesAsync();
-            msg.From = mailAddressViewModel.From;
-            msg.To.AddRange(recipients[RecipientType.TO]);
-            msg.CC.AddRange(recipients[RecipientType.CC]);
+            if (emailReportDto.SendMailConditionSatisfied)
+            {
+                var msg = new MailMessage { IsBodyHtml = true };
 
-            _logger.LogInformation("Sending mail for to address - " +
-                           string.Join(";", msg.To.Select(mailAddress => mailAddress.Address)));
+                var mailAddressViewModel = new MailAddressViewModel(_emailReportConfiguration.MailConfiguration, pipelineData, _logger);
+                var recipients = await mailAddressViewModel.GetRecipientAdrressesAsync();
+                msg.From = mailAddressViewModel.From;
+                msg.To.AddRange(recipients[RecipientType.TO]);
+                msg.CC.AddRange(recipients[RecipientType.CC]);
 
-            _logger.LogInformation("Sending mail for cc address - " +
-                          string.Join(";", msg.CC.Select(mailAddress => mailAddress.Address)));
+                _logger.LogInformation("Sending mail for to address - " +
+                               string.Join(";", msg.To.Select(mailAddress => mailAddress.Address)));
 
-            _logger.LogInformation("Creating view model for generating xml");
-            var emailReportViewModel = new EmailReportViewModel(emailReportDto, _emailReportConfiguration);
-            _logger.LogInformation("Generated view model");
+                _logger.LogInformation("Sending mail for cc address - " +
+                              string.Join(";", msg.CC.Select(mailAddress => mailAddress.Address)));
 
-            msg.Subject = emailReportViewModel.EmailSubject;
-            msg.Body = GenerateBodyFromViewModel(emailReportViewModel);
+                _logger.LogInformation("Creating view model for generating xml");
+                var emailReportViewModel = new EmailReportViewModel(emailReportDto, _emailReportConfiguration);
+                _logger.LogInformation("Generated view model");
 
-            return msg;
+                msg.Subject = emailReportViewModel.EmailSubject;
+                msg.Body = GenerateBodyFromViewModel(emailReportViewModel);
+
+                return msg;
+            }
+            return null;
         }
 
         protected virtual string GenerateBodyFromViewModel(EmailReportViewModel viewModel)

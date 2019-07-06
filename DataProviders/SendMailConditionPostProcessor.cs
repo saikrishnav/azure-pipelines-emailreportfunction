@@ -16,7 +16,7 @@ using Microsoft.VisualStudio.Services.WebApi;
 
 namespace EmailReportFunction.PostProcessor
 {
-    internal class SendMailConditionPostProcessor : IDataPostProcessor
+    internal class SendMailConditionPostProcessor : IDataProvider
     {
         private readonly ITcmApiHelper _tcmApiHelper;
 
@@ -33,7 +33,7 @@ namespace EmailReportFunction.PostProcessor
             _logger = logger;
         }
 
-        public async Task PostProcessAsync(ReportData emailReportDto)
+        public async Task AddReportDataAsync(AbstractReport emailReportDto)
         {
             var sendMailCondition = _emailReportConfiguration.MailConfiguration.SendMailCondition;
 
@@ -72,7 +72,7 @@ namespace EmailReportFunction.PostProcessor
             emailReportDto.SendMailConditionSatisfied = shouldSendMail;
         }
 
-        public async Task<bool> HasPreviousReleaseGotSameFailuresAsync(ReportData emailReportDto, PipelineConfiguration config, bool hasTestFailures, bool hasFailedTasks)
+        public async Task<bool> HasPreviousReleaseGotSameFailuresAsync(AbstractReport emailReportDto, PipelineConfiguration config, bool hasTestFailures, bool hasFailedTasks)
         {
             var hasPrevGotSameFailures = emailReportDto.HasPrevGotSameFailures();
             if (hasPrevGotSameFailures.HasValue)

@@ -9,7 +9,7 @@ using System.Text;
 
 namespace EmailReportFunction.Config
 {
-    public abstract class ReportData
+    public abstract class AbstractReport
     {
         public bool DataMissing { get; set; }
 
@@ -31,6 +31,8 @@ namespace EmailReportFunction.Config
 
         public bool SendMailConditionSatisfied { get; set; }
 
+        public SmtpConfiguration SmtpConfiguration { get; set; }
+
         public abstract bool? HasPrevGotSameFailures();
 
         public abstract bool HasFailedTasks();
@@ -48,5 +50,7 @@ namespace EmailReportFunction.Config
         public abstract BuildReferenceViewModel GetBuildViewModel(PipelineConfiguration config);
 
         public abstract List<ArtifactViewModel> GetArtifactViewModels(PipelineConfiguration config);
+
+        public abstract AbstractReport CreateEmptyReportData();
     }
 }

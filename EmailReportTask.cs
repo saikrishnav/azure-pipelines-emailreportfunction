@@ -6,8 +6,8 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using EmailReportFunction.Wrappers;
 using EmailReportFunction.Utils;
+using EmailReportFunction.Report;
 
 namespace EmailReportFunction
 {
@@ -32,18 +32,15 @@ namespace EmailReportFunction
 
                 var reportFactory = new ReportFactory(emailReportConfig, logger);
 
-                string exMessage = null;
-                bool status = false;
                 try
                 {
-                    status = await new EmailReport(reportFactory).GenerateAndSendReport(emailReportConfig);
+                    var status = await new EmailReport(reportFactory).GenerateAndSendReport();
+                    resultStr = status ? "Mail Sent Successfully" : "Mail Not Sent";
                 }
                 catch (Exception ex)
                 {
-                    exMessage = ex.Message;
+                    resultStr = $"Request not processed properly: \r\n{ex.Message} \r\n\r\nRequestBody for reference: {requestBody}";
                 }
-
-                resultStr = status ? $"Mail Sent Successfully." : exMessage + "\r\n. Request not processed properly: \r\n" + requestBody;
             }
 
             return new OkObjectResult(resultStr);

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace EmailReportFunction.DataProviders
 {
-    public class SmtpConfigurationProvider : IDataProvider<SmtpConfiguration>
+    public class SmtpConfigurationProvider : IDataProvider
     {
         private ILogger _logger;
 
@@ -16,7 +16,7 @@ namespace EmailReportFunction.DataProviders
             _logger = logger;
         }
 
-        public async Task<SmtpConfiguration> GetDataAsync()
+        public async Task AddReportDataAsync(AbstractReport reportData)
         {
             var secret = await KeyVaultReader.FetchSecret(
                 MailConfiguration.KeyVaultName,
@@ -24,7 +24,7 @@ namespace EmailReportFunction.DataProviders
                 MailConfiguration.RetryCount, 
                 _logger);
 
-            return new SmtpConfiguration()
+            reportData.SmtpConfiguration = new SmtpConfiguration()
             {
                 EnableSSL = true,
                 SmtpHost = MailConfiguration.SmtpHost,

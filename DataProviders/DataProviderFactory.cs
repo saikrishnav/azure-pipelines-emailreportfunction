@@ -24,48 +24,39 @@ namespace EmailReportFunction.DataProviders
             _logger = logger;
         }
 
-        public IDataProvider<T> GetDataProvider<T>()
+        public IEnumerable<IDataProvider> GetPipelineDataProviders()
         {
-            IDataProvider<T> dataProvider = null;
-            if (typeof(T) == typeof(SmtpConfiguration))
+            return new List<IDataProvider>()
             {
-                dataProvider = (IDataProvider<T>) SmtpDataProvider;
-            }
-            else if (typeof(T) == typeof(IPipelineData))
-            {
-                dataProvider = (IDataProvider<T>) this.GetPipelineDataProvider();
-            }
-            else if (typeof(T) == typeof(List<IdentityRef>))
-            {
-                dataProvider = (IDataProvider<T>)this.GetFailedTestOwnersDataProvider();
-            }
-            else if (typeof(T) == typeof(IDataProvider<TestSummaryData>))
-            {
-                dataProvider = (IDataProvider<T>) this.GetTestSummaryDataProvider();
-            }
-            else if (typeof(T) == typeof(IDataProvider<FilteredTestResultData>))
-            {
-                dataProvider = (IDataProvider<T>)this.GetTestResultsDataProvider();
-            }
-
-            return dataProvider;
+                GetPipelineSpecificDataProvider(),
+                GetFailedTestOwnersDataProvider(),
+                GetTestSummaryDataProvider(),
+                GetTestResultsDataProvider(),
+                this.SmtpDataProvider
+            };
         }
 
-        private IDataPostProcessor _postProcessor;
-        public IDataPostProcessor PostProcessor
+        public IEnumerable<IDataProvider> GetPostProcessors()
+        {
+            return new List<IDataProvider>() { this.SendMailConditionPostProcessor };
+        }
+
+
+        private IDataProvider _sendMailConditionPostProcessor;
+        public IDataProvider SendMailConditionPostProcessor
         {
             get
             {
-                if (_postProcessor == null)
+                if (_sendMailConditionPostProcessor == null)
                 {
-                    _postProcessor = new SendMailConditionPostProcessor(this._emailReportConfiguration, this.GetTcmApiHelper(), _logger);
+                    _sendMailConditionPostProcessor = new SendMailConditionPostProcessor(this._emailReportConfiguration, this.GetTcmApiHelper(), _logger);
                 }
-                return _postProcessor;
+                return _sendMailConditionPostProcessor;
             }
         }
 
-        private IDataProvider<SmtpConfiguration> _smtpDataProvider;
-        private IDataProvider<SmtpConfiguration> SmtpDataProvider
+        private IDataProvider _smtpDataProvider;
+        private IDataProvider SmtpDataProvider
         {
             get
             {
@@ -100,7 +91,7 @@ namespace EmailReportFunction.DataProviders
             }
         }
 
-        public IDataProvider<IPipelineData> GetPipelineDataProvider()
+        public IDataProvider GetPipelineSpecificDataProvider()
         {
             var pipelineConfiguration = _emailReportConfiguration.PipelineConfiguration;
             if (pipelineConfiguration is ReleaseConfiguration)
@@ -109,25 +100,22 @@ namespace EmailReportFunction.DataProviders
                 return new ReleaseDataProvider(
                     releaseConfig, 
                     this.GetReleaseHttpClient(),
-                    this.GetFailedTestOwnersDataProvider(),
-                    this.GetTestResultsDataProvider(),
-                    this.GetTestSummaryDataProvider(),
                     _logger);
             }
             return null;
         }
 
-        private IDataProvider<TestSummaryData> GetTestSummaryDataProvider()
+        private IDataProvider GetTestSummaryDataProvider()
         {
             return new TestSummaryDataProvider(this.TcmApiHelper, _emailReportConfiguration.ReportDataConfiguration, _logger);
         }
 
-        private IDataProvider<List<IdentityRef>> GetFailedTestOwnersDataProvider()
+        private IDataProvider GetFailedTestOwnersDataProvider()
         {
             return new FailedTestOwnersDataProvider(this.TcmApiHelper, _logger);
         }
 
-        private IDataProvider<FilteredTestResultData> GetTestResultsDataProvider()
+        private IDataProvider GetTestResultsDataProvider()
         {
             var witHelper = GetWorkItemTrackingApiHelper(_emailReportConfiguration.PipelineConfiguration, _logger);
             var tcmApiHelper = GetTcmApiHelper();

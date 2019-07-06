@@ -2,7 +2,6 @@
 using EmailReportFunction.Config.TestResults;
 using EmailReportFunction.Utils;
 using EmailReportFunction.Wrappers;
-using Microsoft.Build.Utilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.TeamFoundation.TestManagement.WebApi;
 using System;
@@ -14,13 +13,7 @@ using System.Threading.Tasks;
 
 namespace EmailReportFunction.DataProviders
 {
-    public class TestSummaryData
-    {
-        public List<TestSummaryGroup> TestSummaryGroups { get; set; }
-        public TestResultSummary ResultSummary { get; set; }
-    }
-
-    public class TestSummaryDataProvider : IDataProvider<TestSummaryData>
+    public class TestSummaryDataProvider : IDataProvider
     {
         private readonly ITcmApiHelper _tcmApiHelper;
         private readonly ReportDataConfiguration _reportDataConfiguration;
@@ -33,7 +26,7 @@ namespace EmailReportFunction.DataProviders
             _logger = logger;
         }
 
-        public async Task<TestSummaryData> GetDataAsync()
+        public async Task AddReportDataAsync(AbstractReport reportData)
         {
             using (new PerformanceMeasurementBlock(nameof(TestSummaryDataProvider), _logger))
             {                
@@ -47,12 +40,10 @@ namespace EmailReportFunction.DataProviders
                     var prioritySummary = await GetTestSummaryByPriorityAsync();
                     testSummaryGroups.Add(prioritySummary);
                 }
+
                 _logger.LogInformation("Fetched data for test summary");
-                return new TestSummaryData()
-                {
-                    ResultSummary = summary,
-                    TestSummaryGroups = testSummaryGroups
-                };
+                reportData.Summary = summary;
+                reportData.TestSummaryGroups = testSummaryGroups;
             }
         }
 

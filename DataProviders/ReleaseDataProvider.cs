@@ -12,53 +12,52 @@ using Microsoft.VisualStudio.Services.ReleaseManagement.WebApi.Contracts;
 using Microsoft.VisualStudio.Services.WebApi;
 using EmailReportFunction.Utils;
 using EmailReportFunction.Config.TestResults;
+using EmailReportFunction.Exceptions;
 
 namespace EmailReportFunction.DataProviders
 {
-    public class ReleaseDataProvider : IReleaseDataProvider
+    public class ReleaseDataProvider : IDataProvider
     {
-        public ReleaseDataProvider(ReleaseConfiguration pipelineConfiguration, 
-            IReleaseHttpClientWrapper releaseHttpClient, 
-            IDataProvider<List<IdentityRef>> failedTestOwnersDataProvider,
-            IDataProvider<FilteredTestResultData> testResultsDataProvider,
-            IDataProvider<TestSummaryData> testSummaryDataProvider,
-            ILogger logger)
+        public ReleaseDataProvider(ReleaseConfiguration pipelineConfiguration,  IReleaseHttpClientWrapper releaseHttpClient, ILogger logger)
         {
-            _failedTestOwnersDataProvider = failedTestOwnersDataProvider;
-            _testResultsDataProvider = testResultsDataProvider;
             _releaseConfiguration = pipelineConfiguration;
             _releaseHttpClient = releaseHttpClient;
-            _testSummaryDataProvider = testSummaryDataProvider;
             _logger = logger;
         }
 
+        private Release _release;
         private ReleaseConfiguration _releaseConfiguration;
         private IReleaseHttpClientWrapper _releaseHttpClient;
-        private IDataProvider<List<IdentityRef>> _failedTestOwnersDataProvider;
-        private IDataProvider<FilteredTestResultData> _testResultsDataProvider;
-        private IDataProvider<TestSummaryData> _testSummaryDataProvider;
         private ILogger _logger;
-
 
         #region IDataProvider
 
-        public async Task<IPipelineData> GetDataAsync()
+        public async Task AddReportDataAsync(AbstractReport report)
         {
-            using (new PerformanceMeasurementBlock("ReleaseDataProvider", _logger))
+            if (report is ReleaseReport)
             {
-                // TODO - retry
-                Release release = await _releaseHttpClient.GetReleaseAsync(_releaseConfiguration.ProjectId, _releaseConfiguration.ReleaseId);
-                if (release == null)
+                var releaseReport = report as ReleaseReport;
+                using (new PerformanceMeasurementBlock("ReleaseDataProvider", _logger))
                 {
-                    throw new ReleaseNotFoundException(_releaseConfiguration.ProjectId + ": " + _releaseConfiguration.ReleaseId);
+                    // TODO - retry
+                    _release = await _releaseHttpClient.GetReleaseAsync(_releaseConfiguration.ProjectId, _releaseConfiguration.ReleaseId);
+                    if (_release == null)
+                    {
+                        throw new ReleaseNotFoundException(_releaseConfiguration.ProjectId + ": " + _releaseConfiguration.ReleaseId);
+                    }
+
+                    releaseReport.Artifacts = new List<Artifact>(_release.Artifacts);
+                    releaseReport.Release = _release;
+                    releaseReport.Environment = await GetEnvironmentAsync();
+                    releaseReport.Phases = await GetPhasesAsync(releaseReport.Environment);
+                    var lastCompletedRelease = await GetReleaseByLastCompletedEnvironmentAsync(releaseReport.Environment);
+                    releaseReport.AssociatedChanges = await GetAssociatedChangesAsync(lastCompletedRelease);
+                    releaseReport.LastCompletedRelease = lastCompletedRelease;
+                    releaseReport.LastCompletedEnvironment = lastCompletedRelease?.Environments?.FirstOrDefault(e => e.DefinitionEnvironmentId == _releaseConfiguration.DefinitionEnvironmentId);
+                    releaseReport.CreatedBy = _release.CreatedBy;
+
+                    _logger.LogInformation("ReleaseDataProvider: Fetched release data");
                 }
-
-                release.Properties.Add(ReleaseData.ReleaseEnvironmentIdString, _releaseConfiguration.EnvironmentId);
-                release.Properties.Add(ReleaseData.UsePrevReleaseEnvironmentString, _releaseConfiguration.UsePreviousEnvironment);
-                var releaseData = new ReleaseData(release, this, _failedTestOwnersDataProvider, _testResultsDataProvider, _testSummaryDataProvider);
-
-                _logger.LogInformation("ReleaseDataProvider: Fetched release data");
-                return releaseData;
             }
         }
 
@@ -66,7 +65,7 @@ namespace EmailReportFunction.DataProviders
 
         #region IReleaseDataProvider
 
-        public async Task<List<ChangeData>> GetAssociatedChangesAsync(Release lastCompletedRelease)
+        private async Task<List<ChangeData>> GetAssociatedChangesAsync(Release lastCompletedRelease)
         {
             if (lastCompletedRelease == null || (lastCompletedRelease != null && lastCompletedRelease.Id > _releaseConfiguration.ReleaseId))
             {
@@ -78,14 +77,14 @@ namespace EmailReportFunction.DataProviders
             return await GetReleaseChanges(lastCompletedRelease.Id);
         }
 
-        public async Task<Release> GetReleaseByLastCompletedEnvironmentAsync(Release release, ReleaseEnvironment environment)
+        private async Task<Release> GetReleaseByLastCompletedEnvironmentAsync(ReleaseEnvironment environment)
         {
             string artifactAlias = null;
             string branchId = null;
 
-            if (release.Artifacts.Any())
+            if (_release.Artifacts.Any())
             {
-                var primaryArtifact = release.Artifacts.FirstOrDefault(artifact => artifact.IsPrimary);
+                var primaryArtifact = _release.Artifacts.FirstOrDefault(artifact => artifact.IsPrimary);
                 if (primaryArtifact != null)
                 {
                     artifactAlias = primaryArtifact.Alias;
@@ -99,7 +98,7 @@ namespace EmailReportFunction.DataProviders
 
             // TODO - retry
             var releases = //RetryHelper.Retry(() =>
-                await _releaseHttpClient.GetReleasesAsync(_releaseConfiguration.ProjectId, release.ReleaseDefinitionReference.Id,
+                await _releaseHttpClient.GetReleasesAsync(_releaseConfiguration.ProjectId, _release.ReleaseDefinitionReference.Id,
                     environment.DefinitionEnvironmentId,
                     (int)EnvironmentStatus.Succeeded | (int)EnvironmentStatus.PartiallySucceeded |
                     (int)EnvironmentStatus.Rejected | (int)EnvironmentStatus.Canceled,
@@ -123,13 +122,12 @@ namespace EmailReportFunction.DataProviders
             return lastRelease;
         }
 
-        public async Task<List<PhaseData>> GetPhasesAsync(ReleaseEnvironment environment)
+        private async Task<List<PhaseData>> GetPhasesAsync(ReleaseEnvironment environment)
         {
             var phases = new List<PhaseData>();
-            var releaseDeployPhases = environment.GetPhases();
 
             int index = 0;
-            foreach (var releasePhase in releaseDeployPhases)
+            foreach (var releasePhase in environment.GetPhases())
             {
                 var name = "Run on Agent";
                 if (environment.DeployPhasesSnapshot.ElementAtOrDefault(index) != null)
@@ -182,6 +180,30 @@ namespace EmailReportFunction.DataProviders
         }
 
         #endregion
+
+        private async Task<ReleaseEnvironment> GetEnvironmentAsync()
+        {
+            ReleaseEnvironment environment = _release.Environments.FirstOrDefault(env => env.Id == _releaseConfiguration.EnvironmentId);
+
+            if (_releaseConfiguration.UsePreviousEnvironment)
+            {
+                if (_release.Environments.IndexOf(environment) - 1 < 0)
+                {
+                    throw new EmailReportException(
+                    $"Unable to find previous environment for given environment id - {_releaseConfiguration.EnvironmentId} in release - {_release.Id}");
+                }
+                environment = _release.Environments[_release.Environments.IndexOf(environment) - 1];
+            }
+
+            if (environment != null)
+            {
+                return await Task.FromResult(environment);
+            }
+
+            throw new EmailReportException(
+                $"Unable to find environment with environment id - {_releaseConfiguration.EnvironmentId} in release - {_release.Id}");
+
+        }
 
         private async Task<List<ChangeData>> GetReleaseChanges(int baseReleaseId)
         {

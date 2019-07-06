@@ -1,19 +1,4 @@
-﻿using EmailReportFunction.Config;
-using EmailReportFunction.Config.Pipeline;
-using EmailReportFunction.DataProviders;
-using EmailReportFunction.Wrappers;
-using Microsoft.Extensions.Logging;
-using Microsoft.VisualStudio.Services.Client;
-using Microsoft.VisualStudio.Services.Common;
-using Microsoft.VisualStudio.Services.OAuth;
-using Microsoft.VisualStudio.Services.ReleaseManagement.WebApi;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Net;
-using System.Text;
+﻿using EmailReportFunction.Report;
 using System.Threading.Tasks;
 
 namespace EmailReportFunction
@@ -27,11 +12,16 @@ namespace EmailReportFunction
             this._reportFactory = reportFactory;
         }
 
-        public async Task<bool> GenerateAndSendReport(EmailReportConfiguration emailReportConfiguration)
+        public async Task<bool> GenerateAndSendReport()
         {
-            var pipelineData = await _reportFactory.DataProviderFactory.GetDataProvider<IPipelineData>().GetDataAsync();
-            var message = await _reportFactory.ReportMessageGenerator.GenerateReportAsync(pipelineData);
-            return await _reportFactory.MailSender.SendMailAsync(message);
+            var mailSent = false;
+            var report = await _reportFactory.ReportGenerator.FetchReportAsync();
+            if (report.SendMailConditionSatisfied)
+            {
+                var message = await _reportFactory.MessageCreator.CreateMessageAsync(report);
+                mailSent = await _reportFactory.MailSender.SendMailAsync(message);
+            }
+            return mailSent;
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using EmailReportFunction.Config;
 using EmailReportFunction.Config.Pipeline;
 using EmailReportFunction.DataProviders;
+using EmailReportFunction.Report;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Net;
@@ -13,20 +14,17 @@ namespace EmailReportFunction.Wrappers
     public class MailSender : IMailSender
     {
         private ILogger _logger;
-        private IDataProvider<SmtpConfiguration> _smtpDataProvider;
 
-        public MailSender(IDataProvider<SmtpConfiguration> smtpDataProvider, ILogger logger)
+        public MailSender(ILogger logger)
         {
             _logger = logger;
-            _smtpDataProvider = smtpDataProvider;
         }
 
-        public async Task<bool> SendMailAsync(MailMessage message)
+        public async Task<bool> SendMailAsync(ReportMessage message)
         {
             try
             {
-                var smtpConfiguration = await _smtpDataProvider.GetDataAsync();
-                var smtpInfo = new UriBuilder(smtpConfiguration.SmtpHost);               
+                var smtpInfo = new UriBuilder(message.SmtpConfiguration.SmtpHost);               
                 using (var smtpClient = new SmtpClient(smtpInfo.Host))
                 {
                     // if Url is provided in https://host:port format
@@ -35,11 +33,11 @@ namespace EmailReportFunction.Wrappers
                         smtpClient.Port = smtpInfo.Port;
                     }
                     // Enable SSL required for mail addresses outside corp net
-                    smtpClient.EnableSsl = smtpConfiguration.EnableSSL;
-                    smtpClient.Credentials = new NetworkCredential(smtpConfiguration.UserName, smtpConfiguration.Password);
+                    smtpClient.EnableSsl = message.SmtpConfiguration.EnableSSL;
+                    smtpClient.Credentials = new NetworkCredential(message.SmtpConfiguration.UserName, message.SmtpConfiguration.Password);
 
                     _logger.LogInformation($"Sending Mail using SmtpHost as '{smtpInfo.Host}:{smtpInfo.Port}' and EnableSSL as '{smtpClient.EnableSsl}'");
-                    await smtpClient.SendMailAsync(message);
+                    await smtpClient.SendMailAsync(message.MailMessage);
 
                     return true;
                 }

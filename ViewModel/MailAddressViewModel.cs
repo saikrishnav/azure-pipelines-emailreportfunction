@@ -19,22 +19,22 @@ namespace EmailReportFunction.ViewModel
 
         private ILogger _logger;
 
-        private IPipelineData _pipelineData;
+        private AbstractReport _reportData;
 
         private MailConfiguration _mailConfiguration;
 
-        public MailAddressViewModel(MailConfiguration mailConfiguration, IPipelineData pipelineData, ILogger logger)
+        public MailAddressViewModel(MailConfiguration mailConfiguration, AbstractReport reportData, ILogger logger)
         {
             _logger = logger;
-            _pipelineData = pipelineData;
+            _reportData = reportData;
             _mailConfiguration = mailConfiguration;
         }
 
-        public async Task<IDictionary<RecipientType, List<MailAddress>>> GetRecipientAdrressesAsync()
+        public IDictionary<RecipientType, List<MailAddress>> GetRecipientAdrresses()
         {
             From = new MailAddress(MailConfiguration.MailSenderAddress);
             _logger.LogInformation("computing email addresses for to/cc section");
-            return await GetMailAddressesAsync();
+            return GetMailAddresses();
         }
 
         #region Helpers
@@ -63,7 +63,7 @@ namespace EmailReportFunction.ViewModel
             return mailAddressSet;
         }
 
-        private async Task<Dictionary<RecipientType, List<MailAddress>>> GetMailAddressesAsync()
+        private IDictionary<RecipientType, List<MailAddress>> GetMailAddresses()
         {
             var recipientAdrresses = new Dictionary<RecipientType, List<MailAddress>>();
             var toAddressHashSet = new HashSet<string>(StringComparer.CurrentCultureIgnoreCase);
@@ -71,7 +71,7 @@ namespace EmailReportFunction.ViewModel
 
             if (_mailConfiguration.To.IncludeTestOwners || _mailConfiguration.Cc.IncludeTestOwners)
             {
-                var failedTestOwners = await GetFailedTestOwnersAsync();
+                var failedTestOwners = GetFailedTestOwners();
                 if (_mailConfiguration.To.IncludeTestOwners)
                 {
                     toAddressHashSet.AddRange(failedTestOwners);
@@ -84,7 +84,7 @@ namespace EmailReportFunction.ViewModel
 
             if (_mailConfiguration.To.IncludeActiveBugOwners || _mailConfiguration.Cc.IncludeTestOwners)
             {
-                var activeBugOwners = await GetActiveBugOwnersForFailedTestsAsync();
+                var activeBugOwners = GetActiveBugOwnersForFailedTests();
                 if (_mailConfiguration.To.IncludeActiveBugOwners)
                 {
                     toAddressHashSet.AddRange(activeBugOwners);
@@ -98,7 +98,7 @@ namespace EmailReportFunction.ViewModel
 
             if (_mailConfiguration.To.IncludeChangesetOwners || _mailConfiguration.Cc.IncludeChangesetOwners)
             {
-                var associatedChanges = await _pipelineData.GetAssociatedChangesAsync();
+                var associatedChanges = _reportData.AssociatedChanges;
                 var changeSetOwners = GetChangesetOwners(associatedChanges);
                 if (_mailConfiguration.To.IncludeActiveBugOwners)
                 {
@@ -132,10 +132,10 @@ namespace EmailReportFunction.ViewModel
             return recipientAdrresses;
         }
 
-        private async Task<List<string>> GetFailedTestOwnersAsync()
+        private List<string> GetFailedTestOwners()
         {
             var mailAddresses = new List<string>();
-            var failedTestOwners = await _pipelineData.GetFailedTestOwnersAsync();
+            var failedTestOwners = _reportData.FailedTestOwners;
             failedTestOwners.ForEach(identity =>
             {
                 var mailAddress = IdentityRefHelper.GetMailAddress(identity);
@@ -149,15 +149,15 @@ namespace EmailReportFunction.ViewModel
             return mailAddresses;
         }
 
-        private async Task<List<string>> GetActiveBugOwnersForFailedTestsAsync()
+        private List<string> GetActiveBugOwnersForFailedTests()
         {
-            var filteredTestData = await _pipelineData.GetFilteredTestsAsync();
-            if (filteredTestData == null || filteredTestData.FilteredTests == null)
+            var filteredTests = _reportData.FilteredResults;
+            if (filteredTests == null)
             {
                 return new List<string>();
             }
 
-            List<string> bugOwners = filteredTestData.FilteredTests
+            List<string> bugOwners = filteredTests
                 .Where(group => group.TestResults.ContainsKey(TestOutcome.Failed))
                 .SelectMany(group => group.TestResults[TestOutcome.Failed])
                 .SelectMany(result => result.AssociatedBugs)
@@ -202,12 +202,12 @@ namespace EmailReportFunction.ViewModel
 
         private string GetCreatedBy()
         {
-            if (_pipelineData.CreatedBy == null)
+            if (_reportData.CreatedBy == null)
             {
                 throw new Exception("Unexpected error - CreatedBy found null");
             }
 
-            return _pipelineData.CreatedBy.UniqueName;
+            return _reportData.CreatedBy.UniqueName;
         }
 
         private List<MailAddress> GetMailAddresses(IEnumerable<string> addressHashSet)

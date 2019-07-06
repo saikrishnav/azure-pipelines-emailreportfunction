@@ -1,4 +1,5 @@
-﻿using EmailReportFunction.PostProcessor;
+﻿using EmailReportFunction.Config.Pipeline;
+using EmailReportFunction.PostProcessor;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -7,8 +8,8 @@ namespace EmailReportFunction.DataProviders
 {
     public interface IDataProviderFactory
     {
-        IDataPostProcessor PostProcessor { get; }
+        IEnumerable<IDataProvider> GetPipelineDataProviders();
 
-        IDataProvider<T> GetDataProvider<T>();
+        IEnumerable<IDataProvider> GetPostProcessors();
     }
 }

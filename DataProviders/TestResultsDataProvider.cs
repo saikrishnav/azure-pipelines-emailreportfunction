@@ -6,7 +6,6 @@ using EmailReportFunction.Utils;
 using EmailReportFunction.Wrappers;
 using Microsoft.Extensions.Logging;
 using Microsoft.TeamFoundation.TestManagement.WebApi;
-using Microsoft.TeamFoundation.WorkItemTracking.Process.WebApi.Models;
 using Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models;
 using System;
 using System.Collections;
@@ -18,14 +17,7 @@ using WorkItemReference = Microsoft.TeamFoundation.TestManagement.WebApi.WorkIte
 
 namespace EmailReportFunction.DataProviders
 {
-    public class FilteredTestResultData
-    {
-        public IEnumerable<TestResultsGroupData> FilteredTests { get; set; }
-
-        public bool HasFilteredTests { get; set; }
-    }
-
-    public class TestResultsDataProvider : IDataProvider<FilteredTestResultData>
+    public class TestResultsDataProvider : IDataProvider
     {
         private readonly ITcmApiHelper _tcmApiHelper;
         private readonly IWorkItemTrackingApiHelper _workItemTrackingApiHelper;
@@ -43,14 +35,14 @@ namespace EmailReportFunction.DataProviders
             _reportDataConfiguration = reportDataConfiguration;
         }
 
-        public async Task<FilteredTestResultData> GetDataAsync()
+        public async Task AddReportDataAsync(AbstractReport reportData)
         {
             using (new PerformanceMeasurementBlock("In TestResultsDataProvider", _logger))
             {
                 // This is to make sure the failing since information is computed before we fetch test results
                 await _tcmApiHelper.QueryTestResultsReportAsync();
                 _logger.LogInformation("Fetched test results data");
-                return await GetFilteredTestResultsAsync();
+                await GetFilteredTestResultsAsync(reportData);
             }
         }
 
@@ -77,7 +69,7 @@ namespace EmailReportFunction.DataProviders
             return includedOutcomes;
         }
 
-        private async Task<FilteredTestResultData> GetFilteredTestResultsAsync()
+        private async Task GetFilteredTestResultsAsync(AbstractReport reportData)
         {
             if (_reportDataConfiguration.IncludeFailedTests || _reportDataConfiguration.IncludeOtherTests ||
                 _reportDataConfiguration.IncludePassedTests)
@@ -86,16 +78,9 @@ namespace EmailReportFunction.DataProviders
                 var includedOutcomes = GetIncludedOutcomes();
 
                 var resultIdsToFetch = await _tcmApiHelper.GetTestSummaryAsync(groupBy, includedOutcomes.ToArray());
-                var hasFilteredTests = FilterTestResults(resultIdsToFetch, _reportDataConfiguration.MaxFailuresToShow);
-                var filteredTests = await GetTestResultsWithWorkItemsAsync(resultIdsToFetch);
-
-                return new FilteredTestResultData()
-                {
-                    FilteredTests = filteredTests,
-                    HasFilteredTests = hasFilteredTests
-                };
+                reportData.HasFilteredTests = FilterTestResults(resultIdsToFetch, _reportDataConfiguration.MaxFailuresToShow);
+                reportData.FilteredResults = (await GetTestResultsWithWorkItemsAsync(resultIdsToFetch)).ToList();
             }
-            return null;
         }
 
         private async Task<TestResultsGroupData[]> GetTestResultsWithWorkItemsAsync(TestResultsDetails resultIdsToFetch)

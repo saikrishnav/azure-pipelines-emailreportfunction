@@ -80,7 +80,7 @@ namespace EmailReportFunction.ViewModel
         {
         }
 
-        public EmailReportViewModel(ReportData emailReportDto, EmailReportConfiguration emailReportConfiguration)
+        public EmailReportViewModel(AbstractReport emailReportDto, EmailReportConfiguration emailReportConfiguration)
         {
             var config = emailReportConfiguration.PipelineConfiguration;
             ProjectName = config.ProjectName;
@@ -121,7 +121,7 @@ namespace EmailReportFunction.ViewModel
 
         #region Helpers
 
-        private void InitializeTestResultGroups(ReportData emailReportDto,
+        private void InitializeTestResultGroups(AbstractReport emailReportDto,
             EmailReportConfiguration emailReportConfig,
             PipelineConfiguration config)
         {
@@ -140,7 +140,7 @@ namespace EmailReportFunction.ViewModel
             HasFilteredTests = emailReportDto.HasFilteredTests;
         }
 
-        private void InitializeAssociatedChanges(ReportData emailReportDto, PipelineConfiguration config)
+        private void InitializeAssociatedChanges(AbstractReport emailReportDto, PipelineConfiguration config)
         {
             if (emailReportDto.AssociatedChanges?.Any() == true)
             {
@@ -152,7 +152,7 @@ namespace EmailReportFunction.ViewModel
             }
         }
 
-        private void InitializePhases(ReportData emailReportDto)
+        private void InitializePhases(AbstractReport emailReportDto)
         {
             Phases = new List<PhaseViewModel>();
             if (emailReportDto.Phases?.Any() != true)
@@ -171,7 +171,7 @@ namespace EmailReportFunction.ViewModel
             }
         }
 
-        private string GetMailSubject(ReportData emailReportDto, MailConfiguration mailConfiguration, ReportDataConfiguration reportDataConfiguration)
+        private string GetMailSubject(AbstractReport emailReportDto, MailConfiguration mailConfiguration, ReportDataConfiguration reportDataConfiguration)
         {
             var userDefinedSubject = mailConfiguration.EmailSubject;
 
@@ -200,7 +200,7 @@ namespace EmailReportFunction.ViewModel
             return subject;
         }
 
-        private string GetPassPercentage(ReportData emailReportDto, bool includeOthersInTotal)
+        private string GetPassPercentage(AbstractReport emailReportDto, bool includeOthersInTotal)
         {
             var summary = emailReportDto.Summary;
             var totalTests = 0;
@@ -230,7 +230,7 @@ namespace EmailReportFunction.ViewModel
             return TestResultsHelper.GetTestOutcomePercentageString(passedTests, totalTests);
         }
 
-        private void InitializeSummaryGroupViewModel(ReportData emailReportDto, ReportDataConfiguration reportDataConfiguration, PipelineConfiguration config)
+        private void InitializeSummaryGroupViewModel(AbstractReport emailReportDto, ReportDataConfiguration reportDataConfiguration, PipelineConfiguration config)
         {
             SummaryGroups = new List<TestSummaryGroupViewModel>();
             if (emailReportDto.TestSummaryGroups != null)

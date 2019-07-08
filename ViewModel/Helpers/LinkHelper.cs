@@ -152,14 +152,13 @@ namespace EmailReportFunction.ViewModel.Helpers
 
         public static string GetReleaseLogsTabLink(ReleaseConfiguration releaseConfig)
         {
-            return GetReleaseLinkTab(releaseConfig.ReleaseId, releaseConfig, "release-logs");
+            return GetReleaseLinkTab(releaseConfig, "release-logs");
         }
 
-        public static string GetReleaseSummaryLink(int releaseId, PipelineConfiguration config)
+        public static string GetReleaseSummaryLink(PipelineConfiguration config)
         {
-            return GetReleaseLinkTab(releaseId, config, "release-summary");
+            return GetReleaseLinkTab(config, "release-summary");
         }
-
 
         public static string GetTestResultLink(PipelineConfiguration config, string runId, int resultId,
             Dictionary<string, string> queryParams = null)
@@ -188,8 +187,7 @@ namespace EmailReportFunction.ViewModel.Helpers
 
         public static string GetTestTabLinkInRelease(ReleaseConfiguration releaseConfig)
         {
-            return GetReleaseLinkTab(releaseConfig.ReleaseId, releaseConfig,
-                "ms.vss-test-web.test-result-in-release-environment-editor-tab");
+            return GetReleaseLinkTab(releaseConfig, "ms.vss-test-web.test-result-in-release-environment-editor-tab");
         }
 
         public static string GetWorkItemLink(PipelineConfiguration config, int workItemId)
@@ -223,10 +221,15 @@ namespace EmailReportFunction.ViewModel.Helpers
             return projectName + "/" + BuildPipelineExtension;
         }
 
-        private static string GetReleaseLinkTab(int releaseId, PipelineConfiguration config, string tab)
+        private static string GetReleaseLinkTab(PipelineConfiguration config, string tab)
         {
             var collectionUri = config.ServerUri;
-            var parameters = GetQueryParameter(new Dictionary<string, object> { { "releaseId", releaseId }, { "extensionId", tab }, { "_a", ReleaseEnvironmentExtension } });
+            var releaseConfig = config as ReleaseConfiguration;
+            var parameters = GetQueryParameter(new Dictionary<string, object> {
+                { "_a", ReleaseEnvironmentExtension },
+                { "releaseId", releaseConfig.ReleaseId },
+                { "environmentId", releaseConfig.EnvironmentId },
+                { "extensionId", tab } });
 
             return new Uri(GetBaseUri(collectionUri), config.ProjectName + "/" + ReleaseProgressView + parameters).AbsoluteUri;
         }

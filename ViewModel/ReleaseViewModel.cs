@@ -52,7 +52,7 @@ namespace EmailReportFunction.ViewModel
 
             ReleaseId = releaseConfig.ReleaseId;
 
-            ReleaseSummaryUrl = LinkHelper.GetReleaseSummaryLink(releaseConfig.ReleaseId, releaseConfig);
+            ReleaseSummaryUrl = LinkHelper.GetReleaseSummaryLink(releaseConfig);
 
             ReleaseLogsLink = LinkHelper.GetReleaseLogsTabLink(releaseConfig);
         }

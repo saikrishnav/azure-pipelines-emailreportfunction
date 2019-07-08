@@ -21,7 +21,7 @@ namespace EmailReportFunction.ViewModel
         {
             Id = releaseReference.Id;
             Name = releaseReference.Name;
-            Url = LinkHelper.GetReleaseSummaryLink(releaseReference.Id, config);
+            Url = LinkHelper.GetReleaseSummaryLink(config);
         }
     }
 }

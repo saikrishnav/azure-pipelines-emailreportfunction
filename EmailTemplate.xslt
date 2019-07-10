@@ -739,37 +739,39 @@
                     </xsl:if>
                   </xsl:for-each>
 
-                  <xsl:choose>
-                    <xsl:when test="EmailReportViewModel/TestResultsGroups/TestResultsGroupViewModel">
-                      <tr>
-                        <td style="border-bottom: 2px solid #e8e8e8">
-                          <table style="width:100%">
-                            <tr>
-                              <td>
-                                <xsl:apply-templates select="EmailReportViewModel/TestResultsGroups" />
-                              </td>
-                            </tr>
-                            <xsl:choose>
-                              <xsl:when test="EmailReportViewModel/HasFilteredTests = 'true'">
-                                <tr>
-                                  <td
-                                    style="padding:0px 30px 30px 30px;font-family: Segoe UI Semibold, Segoe UI, Helvetica, Arial, sans-serif;">
-                                    Test results are truncated.
-                                    <a>
-                                      <xsl:attribute name="href">
-                                        <xsl:value-of select="EmailReportViewModel/TestTabLink" />
-                                      </xsl:attribute>
-                                      View all results
-                                    </a>
-                                  </td>
-                                </tr>
-                              </xsl:when>
-                            </xsl:choose>
-                          </table>
-                        </td>
-                      </tr>
-                    </xsl:when>
-                  </xsl:choose>
+                  <xsl:if test="EmailReportViewModel/HasTestResultsToShow = 'true'">
+                    <xsl:choose>
+                      <xsl:when test="EmailReportViewModel/TestResultsGroups/TestResultsGroupViewModel">
+                        <tr>
+                          <td style="border-bottom: 2px solid #e8e8e8">
+                            <table style="width:100%">
+                              <tr>
+                                <td>
+                                  <xsl:apply-templates select="EmailReportViewModel/TestResultsGroups" />
+                                </td>
+                              </tr>
+                              <xsl:choose>
+                                <xsl:when test="EmailReportViewModel/HasFilteredTests = 'true'">
+                                  <tr>
+                                    <td
+                                      style="padding:0px 30px 30px 30px;font-family: Segoe UI Semibold, Segoe UI, Helvetica, Arial, sans-serif;">
+                                      Test results are truncated.
+                                      <a>
+                                        <xsl:attribute name="href">
+                                          <xsl:value-of select="EmailReportViewModel/TestTabLink" />
+                                        </xsl:attribute>
+                                        View all results
+                                      </a>
+                                    </td>
+                                  </tr>
+                                </xsl:when>
+                              </xsl:choose>
+                            </table>
+                          </td>
+                        </tr>
+                      </xsl:when>
+                    </xsl:choose>
+                  </xsl:if>
                   <xsl:choose>
                     <xsl:when test="EmailReportViewModel/HasCanceledPhases = 'true'">
                       <tr>

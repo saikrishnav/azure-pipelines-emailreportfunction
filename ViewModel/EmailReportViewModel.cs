@@ -41,6 +41,9 @@ namespace EmailReportFunction.ViewModel
         public bool HasFilteredTests { get; set; }
 
         [DataMember]
+        public bool HasTestResultsToShow { get; set; }
+
+        [DataMember]
         public bool HasTaskFailures { get; set; }
 
         [DataMember]
@@ -113,7 +116,7 @@ namespace EmailReportFunction.ViewModel
                 InitializeAssociatedChanges(emailReportDto, config);
             }
 
-            InitializeTestResultGroups(emailReportDto, emailReportConfiguration, config);
+            InitializeTestResultGroups(emailReportDto, emailReportConfiguration);
 
             TestTabLink = config.TestTabLink;      
             DataMissing = emailReportDto.DataMissing;
@@ -121,9 +124,7 @@ namespace EmailReportFunction.ViewModel
 
         #region Helpers
 
-        private void InitializeTestResultGroups(AbstractReport emailReportDto,
-            EmailReportConfiguration emailReportConfig,
-            PipelineConfiguration config)
+        private void InitializeTestResultGroups(AbstractReport emailReportDto, EmailReportConfiguration emailReportConfig)
         {
             TestResultsGroups = new List<TestResultsGroupViewModel>();
 
@@ -138,6 +139,22 @@ namespace EmailReportFunction.ViewModel
             }
 
             HasFilteredTests = emailReportDto.HasFilteredTests;
+
+            if (TestResultsGroups.Count > 0)
+            {
+                if(emailReportConfig.ReportDataConfiguration.IncludePassedTests)
+                {
+                    HasTestResultsToShow = HasTestResultsToShow || TestResultsGroups.Any(t => t.PassedTests.Count > 0);
+                }
+                if (emailReportConfig.ReportDataConfiguration.IncludeFailedTests)
+                {
+                    HasTestResultsToShow = HasTestResultsToShow || TestResultsGroups.Any(t => t.FailedTests.Count > 0);
+                }
+                if (emailReportConfig.ReportDataConfiguration.IncludeOtherTests)
+                {
+                    HasTestResultsToShow = HasTestResultsToShow || TestResultsGroups.Any(t => t.OtherTests.Count > 0);
+                }
+            }
         }
 
         private void InitializeAssociatedChanges(AbstractReport emailReportDto, PipelineConfiguration config)

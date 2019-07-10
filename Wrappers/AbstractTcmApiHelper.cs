@@ -85,8 +85,9 @@ namespace EmailReportFunction.Wrappers
             {
                 TestResultDetailsParserForRun summaryByRun = null;
                 IReadOnlyDictionary<TestOutcomeForPriority, TestResultDetailsParserForPriority>
-                    testResultDetailsByOutcomeForPriorityGroup = null;
+                    testResultDetailsByOutcomeForPriorityGroup = new Dictionary<TestOutcomeForPriority, TestResultDetailsParserForPriority>();
 
+                var tasksToAwait = new List<Task>(); 
                 var runSummaryFetchTask = Task.Run(async () =>
                 {
                     using (new PerformanceMeasurementBlock("Get test summary data by test run", _logger))
@@ -96,17 +97,23 @@ namespace EmailReportFunction.Wrappers
                     }
                 });
 
-                var prioritySummaryFetchTask = Task.Run(async () =>
+                tasksToAwait.Add(runSummaryFetchTask);
+
+                if (_emailReportConfig.ReportDataConfiguration.GroupTestSummaryBy.Contains(TestResultsGroupingType.Priority))
                 {
-                    using (new PerformanceMeasurementBlock("Get test summary data by priority", _logger))
+                    var prioritySummaryFetchTask = Task.Run(async () =>
                     {
-                        testResultDetailsByOutcomeForPriorityGroup = await GetTestSummaryDataByPriorityAsync();
-                    }
-                });
+                        using (new PerformanceMeasurementBlock("Get test summary data by priority", _logger))
+                        {
+                            testResultDetailsByOutcomeForPriorityGroup = await GetTestSummaryDataByPriorityAsync();
+                        }
+                    });
+                    tasksToAwait.Add(prioritySummaryFetchTask);
+                }
 
-                await Task.WhenAll(runSummaryFetchTask, prioritySummaryFetchTask);
+                await Task.WhenAll(tasksToAwait);
 
-                if (summaryByRun == null || testResultDetailsByOutcomeForPriorityGroup == null)
+                if (summaryByRun == null)
                 {
                     throw new EmailReportException("unable to fetch summary data from tcm");
                 }
@@ -193,7 +200,7 @@ namespace EmailReportFunction.Wrappers
                 var totalCountForTestOutcomeByPriority = new Dictionary<int, Dictionary<TestOutcomeForPriority, int>>();
                 summaryItem.TestCountForOutcomeByPriority = totalCountForTestOutcomeByPriority;
 
-                foreach (TestOutcomeForPriority supportedTestOutcome in testResultsForPriorityByOutcome.Keys)
+                foreach (var supportedTestOutcome in testResultsForPriorityByOutcome.Keys)
                 {
                     IReadOnlyDictionary<int, int> resultCountByPriority =
                         testResultsForPriorityByOutcome[supportedTestOutcome].GetTestResultsForRun(

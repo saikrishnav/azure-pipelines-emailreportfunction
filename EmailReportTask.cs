@@ -28,14 +28,16 @@ namespace EmailReportFunction
             else if (req.Method == HttpMethods.Post)
             {
                 string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-                var emailReportConfig = RequestHelper.CreateConfiguration(requestBody, logger);
+                var emailReportConfig = RequestHelper.CreateConfiguration(req.Headers, requestBody, logger);
 
                 var reportFactory = new ReportFactory(emailReportConfig, logger);
 
                 try
                 {
-                    var status = await new EmailReport(reportFactory).GenerateAndSendReport();
-                    resultStr = status ? "Mail Sent Successfully" : "Mail Not Sent";
+                    // TODO: Azure Pipelines Serverless Tasks do not support tasks that take >20s. 
+                    new EmailReport(reportFactory).GenerateAndSendReport();
+                    //resultStr = status ? "Mail Sent Successfully" : "Mail Not Sent";
+                    resultStr = "Request Processing Started successfully. Mail will be sent based on SendMailCondition evaluation.";
                 }
                 catch (Exception ex)
                 {

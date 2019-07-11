@@ -1,4 +1,5 @@
 ﻿using EmailReportFunction.Config.Pipeline;
+using Microsoft.VisualStudio.Services.ReleaseManagement.WebApi;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -17,6 +17,9 @@ namespace EmailReportFunction.ViewModel
         public bool HasFailed { get; set; }
 
         [DataMember]
+        public bool HasSkipped { get; set; }
+
+        [DataMember]
         public bool HasNotRunOnSomeAgents { get; set; }
 
         [DataMember]
@@ -43,11 +46,7 @@ namespace EmailReportFunction.ViewModel
             Name = tasks.First().Name;
 
             HasFailed = tasks.Any(t => t.Status == TaskStatus.Failed || t.Status == TaskStatus.Canceled);
-
-            if (tasks.Count(t => t.Status == TaskStatus.Skipped) == tasks.Count)
-            {
-                HasFailed = true;
-            }
+            HasSkipped = tasks.All(t => t.Status == TaskStatus.Skipped);
 
             if (tasks.Count > 1)
             {

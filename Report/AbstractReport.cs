@@ -29,7 +29,7 @@ namespace EmailReportFunction.Config
 
         public List<ChangeData> AssociatedChanges { get; set; }
 
-        public bool SendMailConditionSatisfied { get; set; }
+        public bool SendMailConditionSatisfied => MailConfiguration != null;
 
         public SmtpConfiguration SmtpConfiguration { get; set; }
 

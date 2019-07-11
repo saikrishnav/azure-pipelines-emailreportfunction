@@ -14,7 +14,7 @@
           <xsl:value-of select="EmailReportViewModel/Title" />
         </title>
 
-        <style>
+        <style>                  
           .single-line {
           white-space: nowrap;
           display: inline-block;
@@ -377,14 +377,12 @@
           padding: 0;
           margin: 0;
 
-          /*   list-style-image: url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/130015/glyph-success.svg'); */
           }
           .check-list ul {
           padding: 0;
           padding-left: 5%;
           }
           .check-list li:before {
-          /*   content: url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/130015/glyph-success.svg'); */
           }
           .check-list li li:hover {
           /*   background-position: 4px 9px; */
@@ -397,12 +395,10 @@
           .check-list li {
           list-style: none;
           padding: 5px 0 5px 30px;
-          background: url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/130015/glyph-success.png') no-repeat;
           background-size: 16px;
           background-position: 1px 9px;
           }
           .check-list .step-fail {
-          background: url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/130015/glyph-error.png') no-repeat;
           background-size: 16px;
           background-position: 1px 9px;
           }
@@ -435,11 +431,9 @@
           vertical-align: top;
           }
           .issues .error {
-          background: 0 10px url(https://s3-us-west-2.amazonaws.com/s.cdpn.io/130015/glyph-error.png) no-repeat;
           background-size: 20px;
           }
           .issues .warning {
-          background: 0 10px url(https://s3-us-west-2.amazonaws.com/s.cdpn.io/130015/glyph-warning.png) no-repeat;
           background-size: 20px;
           }
 
@@ -540,33 +534,6 @@
 <![endif]-->
                 <!-- INNER WRAPPER -->
                 <table border="0" cellpadding="0" cellspacing="0" style="width: 100%;">
-                  <!-- HEADER -->
-                  <tr>
-                    <td style="padding: 0 25px; background:#0078CF;">
-                      <table border="0" cellpadding="0" cellspacing="0" width="100%" style="min-height:45px;"
-                             class="responsive-table">
-                        <tr>
-                          <td>
-                            <table border="0" cellpadding="0" cellspacing="0" class="logo">
-                              <tr>
-                                <td align="" valign="top" style="padding: 9px 0;">
-                                  <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/130015/logo-vsts.png"
-                                       width="30" height="30" alt="Team Services" class="img-block"
-                                       style="color: #ffffff;" />
-                                </td>
-                                <td color="#ffffff"
-                                    style="padding: 0 5px 2px 9px; text-align: left; color: #ffffff; font-family: Segoe UI, Helvetica, Arial, sans-serif; font-size: 15px; font-family: Segoe UI Semibold, Segoe UI, Helvetica, Arial, sans-serif;">
-                                  Team Services / <xsl:value-of select="EmailReportViewModel/ProjectName" />
-                                </td>
-                              </tr>
-                            </table>
-                          </td>
-                        </tr>
-                      </table>
-                    </td>
-                  </tr>
-                  <!-- /HEADER -->
-
                   <!-- TOP BANNER -->
                   <tr>
                     <xsl:choose>
@@ -857,27 +824,6 @@
                             <xsl:text>.</xsl:text>
                           </td>
                         </tr>
-                        <tr>
-                          <td>
-                            <table align="left" border="0" cellspacing="0" cellpadding="0" class="responsive-table">
-                              <tr>
-                                <td class="mobile-center"
-                                    style="padding: 15px 0; font-size: 12px; line-height: 18px; font-family: Segoe UI, Helvetica, Arial, sans-serif;  color:#444444; text-align: left;">
-                                  One Microsoft Way, Redmond, WA, USA 98052
-                                </td>
-                              </tr>
-                            </table>
-                            <table align="right" border="0" cellspacing="0" cellpadding="0" class="responsive-table">
-                              <tr>
-                                <td class="mobile-center foot-logo" style="padding: 15px 0; text-align: right;">
-                                  <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/130015/logo-ms.png" width="77"
-                                       height="15" alt="Microsoft"
-                                       style="font-size: 12px; font-family: Segoe UI, Helvetica, Arial, sans-serif;  color:#999999; display:inline-block;" />
-                                </td>
-                              </tr>
-                            </table>
-                          </td>
-                        </tr>
                       </table>
                     </td>
                   </tr>
@@ -900,8 +846,7 @@
         <tbody>
           <tr>
             <td style="padding-right: 15px;" valign="top">
-              <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/130015/glyph-error-w.png" width="20" height="20"
-                   class="img-block" />
+              <div>❌</div>
             </td>
             <td valign="middle"
                 style="font-size: 14px; line-height:20px; color: white; font-family: Segoe UI Semibold, Segoe UI, Helvetica, Arial, sans-serif; padding-top: 0px; vertical-align: middle; text-transform:uppercase;">
@@ -925,8 +870,7 @@
         <tbody>
           <tr>
             <td style="padding-right: 15px;" valign="top">
-              <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/130015/glyph-success-w.png" width="20" height="20"
-                   class="img-block" />
+              <div>✔</div>
             </td>
             <td valign="middle"
                 style="font-size: 14px; font-family: Segoe UI Semibold, Segoe UI, Helvetica, Arial, sans-serif; line-height:20px; color: white; font-family: Segoe UI, Helvetica, Arial, sans-serif; padding-top: 0px; vertical-align: middle; text-transform:uppercase;">
@@ -1027,18 +971,15 @@
             <td class="test-result-icon" style="width:25px;padding:0px;">
               <xsl:choose>
                 <xsl:when test="TestOutcome = 'Passed'">
-                  <img align="bottom" width="21" height="20"
-                       src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/130015/glyph-success.png" />
+                  <div>✔</div>
                 </xsl:when>
                 <xsl:otherwise>
                   <xsl:choose>
                     <xsl:when test="TestOutcome = 'Failed'">
-                      <img align="bottom" width="21" height="20"
-                           src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/130015/glyph-error.png" />
+                      <div>❌</div>
                     </xsl:when>
                     <xsl:otherwise>
-                      <img align="bottom" width="21" height="20"
-                           src="http://glyphlist.azurewebsites.net/img/images/StatusRunningNoColor.png" />
+                      <div>▷</div>
                     </xsl:otherwise>
                   </xsl:choose>
                 </xsl:otherwise>
@@ -1404,12 +1345,13 @@
                       <td class="test-result-icon" style="width:25px;padding:0px;">
                         <xsl:choose>
                           <xsl:when test="HasFailed = 'true'">
-                            <img align="bottom" width="21" height="20"
-                                 src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/130015/glyph-error.png" />
+                            <div>❌</div>                            
                           </xsl:when>
+                          <xsl:when test="HasSkipped = 'true'">
+                            <div>⊘</div>
+                          </xsl:when>                          
                           <xsl:otherwise>
-                            <img align="bottom" width="21" height="20"
-                                 src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/130015/glyph-success.png" />
+                            <div>✔</div>
                           </xsl:otherwise>
 
                         </xsl:choose>
@@ -1477,12 +1419,10 @@
                                   <td class="test-result-icon" style="width:25px;padding:0px;vertical-align:top;">
                                     <xsl:choose>
                                       <xsl:when test="IssueType = 'Error'">
-                                        <img align="bottom" width="21" height="20"
-                                             src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/130015/glyph-error.png" />
+                                        <div>❌</div>
                                       </xsl:when>
                                       <xsl:otherwise>
-                                        <img align="bottom" width="21" height="20"
-                                             src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/130015/glyph-warning.png" />
+                                        <div>⚠</div>
                                       </xsl:otherwise>
                                     </xsl:choose>
                                   </td>

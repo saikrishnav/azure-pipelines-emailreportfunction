@@ -1,6 +1,5 @@
 ﻿using EmailReportFunction.Config;
 using EmailReportFunction.Config.Pipeline;
-using EmailReportFunction.Config.TestResults;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
@@ -42,7 +41,7 @@ namespace EmailReportFunction.Utils
                 var mailConfiguration = JsonConvert.DeserializeObject<MailConfiguration[]>(data.GetValue("EmailConfiguration").ToString());
 
                 var pipelineInfoObject = (JObject)JsonConvert.DeserializeObject(data.GetValue("PipelineInfo").ToString());
-                var pipelineType = pipelineInfoObject.GetJsonValue<PipelineType>("PipelineType");
+                var pipelineType = pipelineInfoObject.GetValue("PipelineType").ToObject<PipelineType>();
 
                 PipelineConfiguration pipelineConfiguration = null;
                 if (pipelineType == PipelineType.Release)
@@ -66,16 +65,6 @@ namespace EmailReportFunction.Utils
             }
 
             return null;
-        }
-    }
-
-    public static class JsonExtensionMethods
-    {
-
-        public static T GetJsonValue<T>(this JObject jObject, string key)
-        {
-            var jToken = jObject.GetValueOrDefault(key);
-            return jToken == null ? default(T) : jToken.ToObject<T>();
         }
     }
 }

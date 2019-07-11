@@ -11,7 +11,6 @@ using EmailReportFunction.Utils;
 using EmailReportFunction.Wrappers;
 using Microsoft.Extensions.Logging;
 using Microsoft.TeamFoundation.TestManagement.WebApi;
-using Microsoft.VisualStudio.Services.Common;
 using Microsoft.VisualStudio.Services.WebApi;
 
 namespace EmailReportFunction.PostProcessor
@@ -28,6 +27,11 @@ namespace EmailReportFunction.PostProcessor
 
         private bool? hasPreviousReleaseGotSameFailures;
 
+        private bool _testfailuresFlagsInitialized;
+        private bool hasTestFailures;
+        private bool hasFailedTasks;
+        private bool hasCanceledPhases;
+
         public SendMailConditionPostProcessor(EmailReportConfiguration emailReportConfiguration, ITcmApiHelper tcmApiHelper, ILogger logger)
         {
             _tcmApiHelper = tcmApiHelper;
@@ -40,52 +44,60 @@ namespace EmailReportFunction.PostProcessor
             var mailConfigs = _emailReportConfiguration.MailConfigurations;
 
             var shouldSendMail = emailReportDto.DataMissing;
-            MailConfiguration mailConfiguration = null;
+            MailConfiguration mailConfigurationToUse = null;
             if (!shouldSendMail)
             {
-                var hasTestFailures = emailReportDto.HasFailedTests(_emailReportConfiguration.ReportDataConfiguration.IncludeOthersInTotal);
-                var hasFailedTasks = emailReportDto.HasFailedTasks();
-                var hasCanceledPhases = emailReportDto.HasCanceledPhases();
-                var hasFailure = hasTestFailures || hasFailedTasks || hasCanceledPhases;
-
                 // Evaluate each configuration and see what matches
                 foreach (var mailConfig in mailConfigs)
                 {
-                    if ((mailConfig.SendMailCondition == SendMailCondition.OnFailure && hasFailure)
-                        || (mailConfig.SendMailCondition == SendMailCondition.OnSuccess && !hasFailure))
+                    if (mailConfig.SendMailCondition == SendMailCondition.Always)
                     {
-                        shouldSendMail = true;
-                        mailConfiguration = mailConfig;
+                        mailConfigurationToUse = mailConfig;
                     }
-                    else if (mailConfig.SendMailCondition == SendMailCondition.OnNewFailuresOnly && hasFailure)
+                    else
                     {
-                        // Always treat phase cancellation issues as new failure as we cannot distinguish/compare phase level issues
-                        // Still compare failed tests and failed tasks where possible to reduce noise
-                        if (hasCanceledPhases && !hasTestFailures && !hasFailedTasks)
+                        if (!_testfailuresFlagsInitialized)
                         {
-                            shouldSendMail = true;
-                            mailConfiguration = mailConfig;
-                            _logger.LogInformation($"Has Phase cancellation(s) issues. Treating as new failure.");
+                            hasTestFailures = emailReportDto.HasFailedTests(_emailReportConfiguration.ReportDataConfiguration.IncludeOthersInTotal);
+                            hasFailedTasks = emailReportDto.HasFailedTasks();
+                            hasCanceledPhases = emailReportDto.HasCanceledPhases();
+                            _testfailuresFlagsInitialized = true;
                         }
-                        else
+                        var hasFailures = hasTestFailures || hasFailedTasks || hasCanceledPhases;
+
+                        if ((mailConfig.SendMailCondition == SendMailCondition.OnFailure && hasFailures)
+                        || (mailConfig.SendMailCondition == SendMailCondition.OnSuccess && !hasFailures))
                         {
-                            _logger.LogInformation(
-                            $"Looking for new failures, as the user send mail condition is '{mailConfig.SendMailCondition}'.");
-                            if (hasPreviousReleaseGotSameFailures == null)
+                            mailConfigurationToUse = mailConfig;
+                        }
+                        else if (mailConfig.SendMailCondition == SendMailCondition.OnNewFailuresOnly && hasFailures)
+                        {
+                            // Always treat phase cancellation issues as new failure as we cannot distinguish/compare phase level issues
+                            // Still compare failed tests and failed tasks where possible to reduce noise
+                            if (hasCanceledPhases && !hasTestFailures && !hasFailedTasks)
                             {
-                                hasPreviousReleaseGotSameFailures = await HasPreviousReleaseGotSameFailuresAsync(emailReportDto, _emailReportConfiguration.PipelineConfiguration, hasTestFailures, hasFailedTasks);
+                                mailConfigurationToUse = mailConfig;
+                                _logger.LogInformation($"Has Phase cancellation(s) issues. Treating as new failure.");
                             }
-                            shouldSendMail = !hasPreviousReleaseGotSameFailures.Value;
-                            mailConfiguration = mailConfig;
+                            else
+                            {
+                                _logger.LogInformation(
+                                $"Looking for new failures, as the user send mail condition is '{mailConfig.SendMailCondition}'.");
+                                if (hasPreviousReleaseGotSameFailures == null)
+                                {
+                                    hasPreviousReleaseGotSameFailures = await HasPreviousReleaseGotSameFailuresAsync(emailReportDto, _emailReportConfiguration.PipelineConfiguration, hasTestFailures, hasFailedTasks);
+                                }
+                                shouldSendMail = !hasPreviousReleaseGotSameFailures.Value;
+                                mailConfigurationToUse = mailConfig;
+                            }
                         }
                     }
 
-                    if (shouldSendMail) break;
+                    if (mailConfigurationToUse != null) break;
                 }
             }
 
-            emailReportDto.SendMailConditionSatisfied = shouldSendMail;
-            emailReportDto.MailConfiguration = mailConfiguration;
+            emailReportDto.MailConfiguration = mailConfigurationToUse;
         }
 
         public async Task<bool> HasPreviousReleaseGotSameFailuresAsync(AbstractReport emailReportDto, PipelineConfiguration config, bool hasTestFailures, bool hasFailedTasks)

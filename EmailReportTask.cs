@@ -30,18 +30,24 @@ namespace EmailReportFunction
                 string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
                 var emailReportConfig = RequestHelper.CreateConfiguration(req.Headers, requestBody, logger);
 
-                var reportFactory = new ReportFactory(emailReportConfig, logger);
-
-                try
+                if (emailReportConfig == null)
                 {
-                    // TODO: Azure Pipelines Serverless Tasks do not support tasks that take >20s. 
-                    new EmailReport(reportFactory).GenerateAndSendReport();
-                    //resultStr = status ? "Mail Sent Successfully" : "Mail Not Sent";
-                    resultStr = "Request Processing Started successfully. Mail will be sent based on SendMailCondition evaluation.";
+                    resultStr = "ExecuteCondition evaluation didn't pass. Not generating report.";
                 }
-                catch (Exception ex)
+                else
                 {
-                    resultStr = $"Request not processed properly: \r\n{ex.Message} \r\n\r\nRequestBody for reference: {requestBody}";
+                    var reportFactory = new ReportFactory(emailReportConfig, logger);
+                    try
+                    {
+                        // TODO: Azure Pipelines Serverless Tasks do not support tasks that take >20s. 
+                        new EmailReport(reportFactory).GenerateAndSendReport();
+                        //resultStr = status ? "Mail Sent Successfully" : "Mail Not Sent";
+                        resultStr = "Request Processing Started successfully. Mail will be sent based on SendMailCondition evaluation.";
+                    }
+                    catch (Exception ex)
+                    {
+                        resultStr = $"Request not processed properly: \r\n{ex.Message} \r\n\r\nRequestBody for reference: {requestBody}";
+                    }
                 }
             }
 

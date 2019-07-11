@@ -31,7 +31,7 @@ namespace EmailReportFunction.Wrappers
             return //TODO - RetryHelper.Retry(()
                 await _tcmClient.QueryTestResultsReportForReleaseAsync(
                     releaseConfiguration.ProjectName,
-                    releaseConfiguration.ReleaseId,
+                    releaseConfiguration.Id,
                     releaseConfiguration.EnvironmentId);
         }
 
@@ -41,7 +41,7 @@ namespace EmailReportFunction.Wrappers
             {
                 return await _tcmClient.QueryTestResultsReportForReleaseAsync(
                     _releaseConfig.ProjectName,
-                    _releaseConfig.ReleaseId,
+                    _releaseConfig.Id,
                     _releaseConfig.EnvironmentId,
                     includeFailureDetails: true);
             }
@@ -61,7 +61,7 @@ namespace EmailReportFunction.Wrappers
                 return //TODO - RetryHelper.Retry(() =>
                     await _tcmClient.GetTestResultDetailsForReleaseAsync(
                         releaseConfiguration.ProjectId,
-                        releaseConfiguration.ReleaseId,
+                        releaseConfiguration.Id,
                         releaseConfiguration.EnvironmentId,
                         SourceWorkflow.ContinuousDelivery,
                         groupBy,
@@ -74,7 +74,7 @@ namespace EmailReportFunction.Wrappers
             return // TODO - RetryHelper.Retry(() =>
                 await _tcmClient.GetTestResultDetailsForReleaseAsync(
                     _releaseConfig.ProjectId,
-                    _releaseConfig.ReleaseId,
+                    _releaseConfig.Id,
                     _releaseConfig.EnvironmentId,
                     SourceWorkflow.ContinuousDelivery,
                     TestResultsConstants.TestRun);
@@ -87,7 +87,7 @@ namespace EmailReportFunction.Wrappers
             return // TODO - RetryHelper.Retry(() =>
                 await _tcmClient.GetTestResultDetailsForReleaseAsync(
                     _releaseConfig.ProjectId, 
-                    _releaseConfig.ReleaseId,
+                    _releaseConfig.Id,
                     _releaseConfig.EnvironmentId, 
                     SourceWorkflow.ContinuousDelivery, 
                     TestResultsConstants.Priority,

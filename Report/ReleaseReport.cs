@@ -59,7 +59,7 @@ namespace EmailReportFunction.Config.Pipeline
                 throw new NotSupportedException();
             }
 
-            releaseConfig.ReleaseId = LastCompletedRelease.Id;
+            releaseConfig.Id = LastCompletedRelease.Id;
             releaseConfig.DefinitionEnvironmentId = LastCompletedEnvironment.DefinitionEnvironmentId;
             releaseConfig.EnvironmentId = LastCompletedEnvironment.Id;
             return releaseConfig;

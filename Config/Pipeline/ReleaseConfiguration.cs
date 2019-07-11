@@ -2,18 +2,21 @@
 using Microsoft.VisualStudio.Services.ReleaseManagement.WebApi;
 using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Text;
 
 namespace EmailReportFunction.Config
 {
+    [DataContract]
     public class ReleaseConfiguration : PipelineConfiguration
     {
+        [DataMember]
         public string RMServerUri { get; set; }
 
-        public int ReleaseId { get; set; }
-
+        [DataMember]
         public int EnvironmentId { get; set; }
 
+        [DataMember]
         public int DefinitionEnvironmentId { get; set; }
 
         public ReleaseEnvironment Environment { get; set; }

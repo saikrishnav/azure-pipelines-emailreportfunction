@@ -96,7 +96,7 @@ namespace EmailReportFunction.ViewModel
             InitializePhases(emailReportDto);
 
             var reportDataConfiguration = emailReportConfiguration.ReportDataConfiguration;
-            EmailSubject = GetMailSubject(emailReportDto, emailReportConfiguration.MailConfiguration, reportDataConfiguration);
+            EmailSubject = GetMailSubject(emailReportDto, reportDataConfiguration);
             HasFailedTests = emailReportDto.HasFailedTests(reportDataConfiguration.IncludeOthersInTotal);
 
             var summaryGroupDto = emailReportDto.TestSummaryGroups?.First();
@@ -188,9 +188,9 @@ namespace EmailReportFunction.ViewModel
             }
         }
 
-        private string GetMailSubject(AbstractReport emailReportDto, MailConfiguration mailConfiguration, ReportDataConfiguration reportDataConfiguration)
+        private string GetMailSubject(AbstractReport emailReportDto, ReportDataConfiguration reportDataConfiguration)
         {
-            var userDefinedSubject = mailConfiguration.EmailSubject;
+            var userDefinedSubject = emailReportDto.MailConfiguration.MailSubject;
 
             if (string.IsNullOrWhiteSpace(userDefinedSubject))
             {
@@ -254,8 +254,7 @@ namespace EmailReportFunction.ViewModel
             {
                 foreach (var testSummaryGroup in emailReportDto.TestSummaryGroups)
                 {
-                    if (reportDataConfiguration.GroupTestSummaryBy
-                        .Any(group => group == testSummaryGroup.GroupingType))
+                    if (reportDataConfiguration.GroupTestSummaryBy == testSummaryGroup.GroupingType)
                     {
                         // TODO - Log.LogVerbose($"Creating summary group viewmodel for {testSummaryGroupDto.GroupedBy}");
                         SummaryGroups.Add(new TestSummaryGroupViewModel(testSummaryGroup, config, reportDataConfiguration.IncludeOthersInTotal));

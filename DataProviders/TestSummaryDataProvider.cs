@@ -35,7 +35,7 @@ namespace EmailReportFunction.DataProviders
                 var summary =  //TODO - RetryHelper.Retry(() => 
                     await _tcmApiHelper.GetTestResultSummaryAsync();
 
-                if (_reportDataConfiguration.GroupTestSummaryBy.Contains(TestResultsGroupingType.Priority))
+                if (_reportDataConfiguration.GroupTestSummaryBy == TestResultsGroupingType.Priority)
                 {
                     var prioritySummary = await GetTestSummaryByPriorityAsync();
                     testSummaryGroups.Add(prioritySummary);

@@ -8,7 +8,7 @@ namespace EmailReportFunction.Config
          
         public PipelineConfiguration PipelineConfiguration { get; set; }
 
-        public MailConfiguration MailConfiguration { get; set; }
+        public MailConfiguration[] MailConfigurations { get; set; }
 
         public ReportDataConfiguration ReportDataConfiguration { get; set; }
     }

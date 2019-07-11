@@ -40,10 +40,10 @@ namespace EmailReportFunction.DataProviders
                 using (new PerformanceMeasurementBlock("ReleaseDataProvider", _logger))
                 {
                     // TODO - retry
-                    _release = await _releaseHttpClient.GetReleaseAsync(_releaseConfiguration.ProjectId, _releaseConfiguration.ReleaseId);
+                    _release = await _releaseHttpClient.GetReleaseAsync(_releaseConfiguration.ProjectId, _releaseConfiguration.Id);
                     if (_release == null)
                     {
-                        throw new ReleaseNotFoundException(_releaseConfiguration.ProjectId + ": " + _releaseConfiguration.ReleaseId);
+                        throw new ReleaseNotFoundException(_releaseConfiguration.ProjectId + ": " + _releaseConfiguration.Id);
                     }
 
                     releaseReport.Artifacts = new List<Artifact>(_release.Artifacts);
@@ -67,13 +67,13 @@ namespace EmailReportFunction.DataProviders
 
         private async Task<List<ChangeData>> GetAssociatedChangesAsync(Release lastCompletedRelease)
         {
-            if (lastCompletedRelease == null || (lastCompletedRelease != null && lastCompletedRelease.Id > _releaseConfiguration.ReleaseId))
+            if (lastCompletedRelease == null || (lastCompletedRelease != null && lastCompletedRelease.Id > _releaseConfiguration.Id))
             {
                 // Do not include any changes if already tested with a later version.
                 return new List<ChangeData>();
             }
 
-            _logger.LogInformation($"Getting changes between releases {_releaseConfiguration.ReleaseId} & {lastCompletedRelease.Id}");
+            _logger.LogInformation($"Getting changes between releases {_releaseConfiguration.Id} & {lastCompletedRelease.Id}");
             return await GetReleaseChanges(lastCompletedRelease.Id);
         }
 
@@ -207,15 +207,15 @@ namespace EmailReportFunction.DataProviders
 
         private async Task<List<ChangeData>> GetReleaseChanges(int baseReleaseId)
         {
-            _logger.LogInformation($"Fetching changes between releases - {baseReleaseId} & {_releaseConfiguration.ReleaseId}");
+            _logger.LogInformation($"Fetching changes between releases - {baseReleaseId} & {_releaseConfiguration.Id}");
 
             // TODO - Retry
             var releaseChanges = // RetryHelper.Retry(() =>
-                await _releaseHttpClient.GetReleaseChangesAsync(_releaseConfiguration.ProjectId, _releaseConfiguration.ReleaseId, baseReleaseId) ?? new List<Change>();
+                await _releaseHttpClient.GetReleaseChangesAsync(_releaseConfiguration.ProjectId, _releaseConfiguration.Id, baseReleaseId) ?? new List<Change>();
 
             if (!releaseChanges.Any())
             {
-                _logger.LogInformation($"No changes found between releases - {baseReleaseId} & {_releaseConfiguration.ReleaseId}");
+                _logger.LogInformation($"No changes found between releases - {baseReleaseId} & {_releaseConfiguration.Id}");
             }
 
             return releaseChanges

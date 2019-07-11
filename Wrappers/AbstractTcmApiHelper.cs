@@ -99,7 +99,7 @@ namespace EmailReportFunction.Wrappers
 
                 tasksToAwait.Add(runSummaryFetchTask);
 
-                if (_emailReportConfig.ReportDataConfiguration.GroupTestSummaryBy.Contains(TestResultsGroupingType.Priority))
+                if (_emailReportConfig.ReportDataConfiguration.GroupTestSummaryBy == TestResultsGroupingType.Priority)
                 {
                     var prioritySummaryFetchTask = Task.Run(async () =>
                     {

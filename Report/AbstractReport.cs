@@ -33,6 +33,8 @@ namespace EmailReportFunction.Config
 
         public SmtpConfiguration SmtpConfiguration { get; set; }
 
+        public MailConfiguration MailConfiguration { get; set; }
+
         public abstract bool? HasPrevGotSameFailures();
 
         public abstract bool HasFailedTasks();

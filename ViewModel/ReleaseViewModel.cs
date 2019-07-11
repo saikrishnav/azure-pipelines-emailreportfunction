@@ -50,7 +50,7 @@ namespace EmailReportFunction.ViewModel
                 ReleaseName = currentEnvironment.ReleaseReference?.Name;
             }
 
-            ReleaseId = releaseConfig.ReleaseId;
+            ReleaseId = releaseConfig.Id;
 
             ReleaseSummaryUrl = LinkHelper.GetReleaseSummaryLink(releaseConfig);
 

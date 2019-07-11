@@ -1,7 +1,9 @@
 ﻿using EmailReportFunction.Config;
+using System.Runtime.Serialization;
 
 namespace EmailReportFunction.Config
 {
+    [DataContract]
     public class MailConfiguration
     {
         public const string SecretName = "azpipes";
@@ -14,17 +16,23 @@ namespace EmailReportFunction.Config
 
         public const int RetryCount = 3;
 
+        [DataMember]
         public SendMailCondition SendMailCondition { get; set; }
 
-        public string ToAddrresses { get; set; }
+        [DataMember]
+        public string ToAddresses { get; set; }
 
+        [DataMember]
         public string IncludeInTo { get; set; }
 
-        public string CcAddrresses { get; set; }
+        [DataMember]
+        public string CcAddresses { get; set; }
 
+        [DataMember]
         public string IncludeInCc { get; set; }
 
-        public string EmailSubject { get; set; }
+        [DataMember]
+        public string MailSubject { get; set; }
 
         private MailRecipientsConfiguration _to;
         public MailRecipientsConfiguration To
@@ -33,7 +41,7 @@ namespace EmailReportFunction.Config
             {
                 if (_to == null)
                 {
-                    _to = GetRecipientsConfiguration(ToAddrresses, IncludeInTo ?? string.Empty);
+                    _to = GetRecipientsConfiguration(ToAddresses, IncludeInTo ?? string.Empty);
                 }
                 return _to;
            }
@@ -46,7 +54,7 @@ namespace EmailReportFunction.Config
             {
                 if (_cc == null)
                 {
-                    _cc = GetRecipientsConfiguration(CcAddrresses, IncludeInCc ?? string.Empty);
+                    _cc = GetRecipientsConfiguration(CcAddresses, IncludeInCc ?? string.Empty);
                 }
                 return _cc;
             }

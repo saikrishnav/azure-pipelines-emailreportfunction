@@ -21,13 +21,12 @@ namespace EmailReportFunction.ViewModel
 
         private AbstractReport _reportData;
 
-        private MailConfiguration _mailConfiguration;
+        private MailConfiguration MailConfiguration => _reportData.MailConfiguration;
 
-        public MailAddressViewModel(MailConfiguration mailConfiguration, AbstractReport reportData, ILogger logger)
+        public MailAddressViewModel(AbstractReport reportData, ILogger logger)
         {
             _logger = logger;
             _reportData = reportData;
-            _mailConfiguration = mailConfiguration;
         }
 
         public IDictionary<RecipientType, List<MailAddress>> GetRecipientAdrresses()
@@ -69,10 +68,10 @@ namespace EmailReportFunction.ViewModel
             var toAddressHashSet = new HashSet<string>(StringComparer.CurrentCultureIgnoreCase);
             var ccAddressHashSet = new HashSet<string>(StringComparer.CurrentCultureIgnoreCase);
 
-            if (_mailConfiguration.To.IncludeTestOwners || _mailConfiguration.Cc.IncludeTestOwners)
+            if (MailConfiguration.To.IncludeTestOwners || MailConfiguration.Cc.IncludeTestOwners)
             {
                 var failedTestOwners = GetFailedTestOwners();
-                if (_mailConfiguration.To.IncludeTestOwners)
+                if (MailConfiguration.To.IncludeTestOwners)
                 {
                     toAddressHashSet.AddRange(failedTestOwners);
                 }
@@ -82,10 +81,10 @@ namespace EmailReportFunction.ViewModel
                 }
             }
 
-            if (_mailConfiguration.To.IncludeActiveBugOwners || _mailConfiguration.Cc.IncludeTestOwners)
+            if (MailConfiguration.To.IncludeActiveBugOwners || MailConfiguration.Cc.IncludeTestOwners)
             {
                 var activeBugOwners = GetActiveBugOwnersForFailedTests();
-                if (_mailConfiguration.To.IncludeActiveBugOwners)
+                if (MailConfiguration.To.IncludeActiveBugOwners)
                 {
                     toAddressHashSet.AddRange(activeBugOwners);
                 }
@@ -96,11 +95,11 @@ namespace EmailReportFunction.ViewModel
             }
 
 
-            if (_mailConfiguration.To.IncludeChangesetOwners || _mailConfiguration.Cc.IncludeChangesetOwners)
+            if (MailConfiguration.To.IncludeChangesetOwners || MailConfiguration.Cc.IncludeChangesetOwners)
             {
                 var associatedChanges = _reportData.AssociatedChanges;
                 var changeSetOwners = GetChangesetOwners(associatedChanges);
-                if (_mailConfiguration.To.IncludeActiveBugOwners)
+                if (MailConfiguration.To.IncludeActiveBugOwners)
                 {
                     toAddressHashSet.AddRange(changeSetOwners);
                 }
@@ -110,17 +109,17 @@ namespace EmailReportFunction.ViewModel
                 }
             }
 
-            if (_mailConfiguration.To.IncludeCreatedBy)
+            if (MailConfiguration.To.IncludeCreatedBy)
             {
                 toAddressHashSet.Add(GetCreatedBy());
             }
-            else if(_mailConfiguration.Cc.IncludeCreatedBy)
+            else if(MailConfiguration.Cc.IncludeCreatedBy)
             {
                 ccAddressHashSet.Add(GetCreatedBy());
             }
 
-            toAddressHashSet.AddRange(GetEmailAddressesFromString(_mailConfiguration.To.DefaultRecipients));
-            ccAddressHashSet.AddRange(GetEmailAddressesFromString(_mailConfiguration.Cc.DefaultRecipients));
+            toAddressHashSet.AddRange(GetEmailAddressesFromString(MailConfiguration.To.DefaultRecipients));
+            ccAddressHashSet.AddRange(GetEmailAddressesFromString(MailConfiguration.Cc.DefaultRecipients));
 
             recipientAdrresses.Add(RecipientType.TO, GetMailAddresses(toAddressHashSet)
                 .DistinctBy(mailAddress => mailAddress.Address.ToLowerInvariant())

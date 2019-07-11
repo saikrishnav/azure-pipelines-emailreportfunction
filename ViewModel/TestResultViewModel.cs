@@ -81,7 +81,7 @@ namespace EmailReportFunction.ViewModel
             switch (config)
             {
                 case ReleaseConfiguration releaseConfig:
-                    failingSinceNotCurrent = result.FailingSince?.Release?.Id != releaseConfig.ReleaseId;
+                    failingSinceNotCurrent = result.FailingSince?.Release?.Id != releaseConfig.Id;
                     break;
 
                 //TODO case Config.BuildConfiguration buildConfig:

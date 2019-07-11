@@ -227,7 +227,7 @@ namespace EmailReportFunction.ViewModel.Helpers
             var releaseConfig = config as ReleaseConfiguration;
             var parameters = GetQueryParameter(new Dictionary<string, object> {
                 { "_a", ReleaseEnvironmentExtension },
-                { "releaseId", releaseConfig.ReleaseId },
+                { "releaseId", releaseConfig.Id },
                 { "environmentId", releaseConfig.EnvironmentId },
                 { "extensionId", tab } });
 

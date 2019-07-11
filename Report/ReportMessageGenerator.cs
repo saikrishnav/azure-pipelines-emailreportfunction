@@ -36,7 +36,7 @@ namespace EmailReportFunction.Report
         {
             var msg = new MailMessage { IsBodyHtml = true };
 
-            var mailAddressViewModel = new MailAddressViewModel(_emailReportConfiguration.MailConfiguration, reportData, _logger);
+            var mailAddressViewModel = new MailAddressViewModel(reportData, _logger);
             var recipients = mailAddressViewModel.GetRecipientAdrresses();
             msg.From = mailAddressViewModel.From;
             msg.To.AddRange(recipients[RecipientType.TO]);

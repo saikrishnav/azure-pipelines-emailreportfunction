@@ -824,6 +824,11 @@
                             <xsl:text>.</xsl:text>
                           </td>
                         </tr>
+                        <tr>
+                          <td class="mobile-center"
+                              style="padding: 7px 0; font-size: 12px; line-height: 5px; font-family: Segoe UI, Helvetica, Arial, sans-serif;  color:#444444; text-align: left;">
+                          </td>
+                        </tr>
                       </table>
                     </td>
                   </tr>

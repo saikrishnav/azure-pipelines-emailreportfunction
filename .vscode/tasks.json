@@ -1,0 +1,73 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "clean",
+      "command": "dotnet clean",
+      "type": "shell",
+      "problemMatcher": "$msCompile",
+      "options": {
+        "cwd": "${workspaceFolder}/CSharpVersion"
+      }
+    },
+    {
+      "label": "build",
+      "command": "dotnet build",
+      "type": "shell",
+      "dependsOn": "clean",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": "$msCompile",
+      "options": {
+        "cwd": "${workspaceFolder}/CSharpVersion"
+      }
+    },
+    {
+      "label": "clean release",
+      "command": "dotnet clean --configuration Release",
+      "type": "shell",
+      "problemMatcher": "$msCompile",
+      "options": {
+        "cwd": "${workspaceFolder}/CSharpVersion"
+      }
+    },
+    {
+      "label": "publish",
+      "command": "dotnet publish --configuration Release",
+      "type": "shell",
+      "dependsOn": "clean release",
+      "problemMatcher": "$msCompile",
+      "options": {
+        "cwd": "${workspaceFolder}/CSharpVersion"
+      }
+    },
+    {
+      "type": "func",
+      "command": "host start",
+      "problemMatcher": "$func-watch",
+      "isBackground": true,
+      "dependsOn": "npm build"
+    },
+    {
+      "type": "shell",
+      "label": "npm build",
+      "command": "npm run build",
+      "dependsOn": "npm install",
+      "problemMatcher": "$tsc"
+    },
+    {
+      "type": "shell",
+      "label": "npm install",
+      "command": "npm install"
+    },
+    {
+      "type": "shell",
+      "label": "npm prune",
+      "command": "npm prune --production",
+      "dependsOn": "npm build",
+      "problemMatcher": []
+    }
+  ]
+}

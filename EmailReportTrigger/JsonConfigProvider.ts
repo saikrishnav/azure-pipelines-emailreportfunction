@@ -1,7 +1,16 @@
-import { IConfigurationProvider, PipelineConfiguration, MailConfiguration, ReportDataConfiguration, SendMailCondition, PipelineType, SmtpConfiguration, GroupTestResultsBy, TestResultsConfiguration, RecipientsConfiguration } from "azuredevops-emailreport";
 import { isNullOrUndefined } from "util";
-import { StringUtils } from "azuredevops-emailreport/utils/StringUtils";
 import { Secret } from "@azure/keyvault-secrets";
+import { IConfigurationProvider } from "./config/IConfigurationProvider";
+import { PipelineConfiguration } from "./config/pipeline/PipelineConfiguration";
+import { MailConfiguration } from "./config/mail/MailConfiguration";
+import { ReportDataConfiguration } from "./config/report/ReportDataConfiguration";
+import { SendMailCondition } from "./config/report/SendMailCondition";
+import { PipelineType } from "./config/pipeline/PipelineType";
+import { SmtpConfiguration } from "./config/mail/SmtpConfiguration";
+import { StringUtils } from "./utils/StringUtils";
+import { GroupTestResultsBy } from "./config/report/GroupTestResultsBy";
+import { TestResultsConfiguration } from "./config/report/TestResultsConfiguration";
+import { RecipientsConfiguration } from "./config/mail/RecipientsConfiguration";
 
 export class JsonConfigProvider implements IConfigurationProvider {
 

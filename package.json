@@ -12,10 +12,26 @@
     "test": "echo \"No tests yet...\""
   },
   "dependencies": {
-    "@azure/keyvault-secrets": "^4.0.0-preview.4"
+    "@azure/keyvault-secrets": "^4.0.0-preview.4",
+    "azure-devops-node-api": "^8.0.0",
+    "js2xmlparser": "^4.0.0",
+    "nodemailer": "^6.3.0",
+    "reflect-metadata": "^0.1.13",
+    "stats-lite": "^2.0.0",
+    "ts-mockito": "^2.3.1",
+    "xslt-processor": "^0.11.5"
   },
   "devDependencies": {
     "@azure/functions": "^1.0.2-beta2",
-    "typescript": "^3.3.3"
+    "typescript": "^3.3.3",
+    "@types/jest": "^24.0.15",
+    "@types/node": "^12.0.4",
+    "@types/q": "^1.5.2",
+    "jest": "^24.8.0",
+    "rimraf": "^2.6.3",
+    "sinon": "^7.3.2",
+    "source-map-loader": "^0.2.3",
+    "ts-jest": "^24.0.2",
+    "ts-loader": "^6.0.4"
   }
 }

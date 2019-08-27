@@ -1,28 +1,26 @@
 import { AzureFunction, Context, HttpRequest } from "@azure/functions";
-import * as msrestazure from "ms-rest-azure";
-import * as keyvault from "azure-keyvault";
+import * as KeyVault from "@azure/keyvault-secrets";
+import * as Identity from "@azure/identity";
+import { JsonConfigProvider } from "./JsonConfigProvider";
 
 const httpTrigger: AzureFunction = async function (context: Context, req: HttpRequest): Promise<void> {
     context.log('HTTP trigger function processed a request.');
     const name = (req.query.name || (req.body && req.body.name));
 
     if (name) {
-        context.res = {
-            // status: 200, /* Defaults to 200 */
-            body: "Hello " + (req.query.name || req.body.name)
-        };
-
-        const keyVaultName = req.query.name;
-        const secretName = req.query.key;
-        const vaultUri =  `https://${keyVaultName}.vault.azure.net/`;
-        const vaultSecretUri =  `${vaultUri}secrets/${secretName}`;
-        let credentials = await msrestazure.MSIAppServiceTokenCredentials() //{resource: vaultUri});
-        const keyVaultClient = new keyvault.KeyVaultClient(credentials);
+        const vaultUri =  `https://vsotest.vault.azure.net/`;
+        let credentials = new Identity.EnvironmentCredential();
+        const keyVaultClient = new KeyVault.SecretsClient(vaultUri, credentials);
             
         // We're setting the Secret value here and retrieving the secret value
-        const secretBundle = await keyVaultClient.getSecret(vaultUri, secretName, "");
-        const secretValue = secretBundle;
+        const secretBundle = await keyVaultClient.getSecret("vseqa1-hotmail");
         
+        //const report = new EmailReport.AzureDevOpsPipelineReport();
+        //await report.GenerateAndSendReportAsync(new JsonConfigProvider(req.body, secretBundle));
+        context.res = {
+            // status: 200, /* Defaults to 200 */
+            body: "Mail Sent"
+        };
     }
     else {
         context.res = {

@@ -6,16 +6,17 @@
   "PipelineInfo": {
     "PipelineType": "", // Build/Release,
     "ProjectId": "", //Azure devOps Account ProjectId,
-    "ProjectName": "" //Azure DevOps Account ProjectName",
+    "ProjectName": "", //Azure DevOps Account ProjectName",
     "Id": "", // Pipeline Id (not definition id)
     "ServerUri": "https://dev.azure.com/{account}/",
     "RMServerUri": "https://vsrm.dev.azure.com/{account}/", //typically 
     "DefinitionEnvironmentId": 1111, // Environment Def Id
-    "EnvironmentId": 123456789 // Environment Id for the specific run
+    "EnvironmentId": 123456789, // Environment Id for the specific run,
+    "UsePreviousEnvironment": "true" // Compiles report for previous stage of the EnvironmentId specified
   },
   "EmailConfiguration": {
     "MailSubject": "Azure Function Email Report Task",
-    "SendMailCondition": "Always", // Allowed values -   "On Failure", "On Success", "On New Failures Only", "Always"
+    "SendMailCondition": "Always", // Allowed values -   "On Failure", "On Success", "On New Failures Only", "Always" 
     // One of the below should be filled - 
     "ToAddresses": "", // email addresses - abc@xyz.com;def@xyz.com
     "CcAddresses": "",
@@ -32,6 +33,5 @@
     "MaxFailuresToShow": 5, // Number of test failures to show up in email
     "GroupTestSummaryBy": "Run", // test summary pane on email top - grouping. allowed values - Priority/Run/Team (Multiple values allowed - comma seperated)
     "IncludeResults": "1", //    "1": "Failed Tests",   "2": "Other Tests", - 
-    "UsePreviousEnvironment": "true" // Compiles report for previous stage of the EnvironmentId specified
   }
 }

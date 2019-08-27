@@ -14,18 +14,17 @@ import { RecipientsConfiguration } from "./config/mail/RecipientsConfiguration";
 
 export class JsonConfigProvider implements IConfigurationProvider {
 
-  private jsonObject: any;
-  private smtpSecret: Secret;
+  private jsonRequest: any;
   private pipelineConfiguration: PipelineConfiguration;
   private mailConfiguration: MailConfiguration;
   private reportDataConfiguration: ReportDataConfiguration;
   private sendMailCondition: SendMailCondition;
 
-  constructor(jsonInput: string, smtpSecret: Secret) {
-    this.jsonObject = JSON.parse(jsonInput);
-      this.initPipelineConfiguration();
-      this.initMailConfiguration();
-      this.initReportDataConfiguration();
+  constructor(jsonRequest: any, smtpSecret: Secret) {
+    this.jsonRequest = jsonRequest;
+    this.initPipelineConfiguration();
+    this.initMailConfiguration(smtpSecret);
+    this.initReportDataConfiguration();
   }
 
   getPipelineConfiguration(): PipelineConfiguration {
@@ -45,17 +44,17 @@ export class JsonConfigProvider implements IConfigurationProvider {
    * Gets access token from system
    */
   private getAccessKey(): string {
-    if(isNullOrUndefined(this.jsonObject["System.AccessToken"])) {
+    if (isNullOrUndefined(this.jsonRequest["System.AccessToken"])) {
       throw new Error("Invalid JSON Request. Agent AccessToken not provided.");
     }
-    return this.jsonObject["System.AccessToken"];
+    return this.jsonRequest["System.AccessToken"];
   }
 
   private initPipelineConfiguration(): void {
-      if(isNullOrUndefined(this.jsonObject.PipelineInfo)) {
-        throw new Error("Invalid JSON Request. PipelineInfo not provided.");
-      }
-      const pipelineInfo = this.jsonObject.PipelineInfo;
+    if (isNullOrUndefined(this.jsonRequest.PipelineInfo)) {
+      throw new Error("Invalid JSON Request. PipelineInfo not provided.");
+    }
+    const pipelineInfo = this.jsonRequest.PipelineInfo;
 
     const pipelineType = pipelineInfo.PipelineType == "build" ? PipelineType.Build : PipelineType.Release;
     const pipelineId = Number(pipelineInfo.Id);
@@ -71,22 +70,21 @@ export class JsonConfigProvider implements IConfigurationProvider {
     this.pipelineConfiguration = new PipelineConfiguration(pipelineType, pipelineId, projectId, projectName, envId, envDefId, usePrevEnvironment, teamUri, this.getAccessKey());
   }
 
-  private initMailConfiguration(): void {
-    if(isNullOrUndefined(this.jsonObject.EmailConfiguration)) {
+  private initMailConfiguration(smtpSecret: Secret): void {
+    if (isNullOrUndefined(this.jsonRequest.EmailConfiguration)) {
       throw new Error("Invalid JSON Request. EmailConfiguration not provided.");
     }
-    const emailConfig = this.jsonObject.PipelineInfo;
+    const emailConfig = this.jsonRequest.PipelineInfo;
     const smtpHost = "smtp.live.com";
-    const userName = this.smtpSecret.id;
-    const password = this.smtpSecret.value;
+    const userName = smtpSecret.id;
+    const password = smtpSecret.value;
     const enableSSLOnSmtpConnection = true;
 
     const smtpConfig = new SmtpConfiguration(userName, password, smtpHost, enableSSLOnSmtpConnection);
 
     // Mail Subject
     const mailSubject = emailConfig.MailSubject;
-    if (StringUtils.isNullOrWhiteSpace(mailSubject))
-    {
+    if (StringUtils.isNullOrWhiteSpace(mailSubject)) {
       throw new Error("Email subject not set");
     }
 
@@ -105,10 +103,10 @@ export class JsonConfigProvider implements IConfigurationProvider {
   }
 
   private initReportDataConfiguration(): void {
-    if(isNullOrUndefined(this.jsonObject.ReportDataConfiguration)) {
+    if (isNullOrUndefined(this.jsonRequest.ReportDataConfiguration)) {
       throw new Error("Invalid JSON Request. EmailConfiguration not provided.");
     }
-    const reportDataConfig = this.jsonObject.ReportDataConfiguration;
+    const reportDataConfig = this.jsonRequest.ReportDataConfiguration;
     // required inputs
     const groupResultsBy = this.getGroupTestResultsByEnumFromString(reportDataConfig.GroupTestResultsBy);
     const includeOthersInTotal = reportDataConfig.IncludeOthersInTotal;

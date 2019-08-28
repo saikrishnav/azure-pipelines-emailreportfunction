@@ -1,16 +1,15 @@
 import { isNullOrUndefined } from "util";
-import { Secret } from "@azure/keyvault-secrets";
-import { IConfigurationProvider } from "./config/IConfigurationProvider";
-import { PipelineConfiguration } from "./config/pipeline/PipelineConfiguration";
-import { MailConfiguration } from "./config/mail/MailConfiguration";
-import { ReportDataConfiguration } from "./config/report/ReportDataConfiguration";
-import { SendMailCondition } from "./config/report/SendMailCondition";
-import { PipelineType } from "./config/pipeline/PipelineType";
-import { SmtpConfiguration } from "./config/mail/SmtpConfiguration";
-import { StringUtils } from "./utils/StringUtils";
-import { GroupTestResultsBy } from "./config/report/GroupTestResultsBy";
-import { TestResultsConfiguration } from "./config/report/TestResultsConfiguration";
-import { RecipientsConfiguration } from "./config/mail/RecipientsConfiguration";
+import { IConfigurationProvider } from "azure-devops-emailreporttask/config/IConfigurationProvider";
+import { PipelineConfiguration } from "azure-devops-emailreporttask/config/pipeline/PipelineConfiguration";
+import { MailConfiguration } from "azure-devops-emailreporttask/config/mail/MailConfiguration";
+import { ReportDataConfiguration } from "azure-devops-emailreporttask/config/report/ReportDataConfiguration";
+import { SendMailCondition } from "azure-devops-emailreporttask/config/report/SendMailCondition";
+import { PipelineType } from "azure-devops-emailreporttask/config/pipeline/PipelineType";
+import { SmtpConfiguration } from "azure-devops-emailreporttask/config/mail/SmtpConfiguration";
+import { StringUtils } from "azure-devops-emailreporttask/utils/StringUtils";
+import { GroupTestResultsBy } from "azure-devops-emailreporttask/config/report/GroupTestResultsBy";
+import { TestResultsConfiguration } from "azure-devops-emailreporttask/config/report/TestResultsConfiguration";
+import { RecipientsConfiguration } from "azure-devops-emailreporttask/config/mail/RecipientsConfiguration";
 
 export class JsonConfigProvider implements IConfigurationProvider {
 
@@ -20,10 +19,10 @@ export class JsonConfigProvider implements IConfigurationProvider {
   private reportDataConfiguration: ReportDataConfiguration;
   private sendMailCondition: SendMailCondition;
 
-  constructor(jsonRequest: any, smtpSecret: Secret) {
+  constructor(jsonRequest: any, smtpConfig: SmtpConfiguration) {
     this.jsonRequest = jsonRequest;
     this.initPipelineConfiguration();
-    this.initMailConfiguration(smtpSecret);
+    this.initMailConfiguration(smtpConfig);
     this.initReportDataConfiguration();
   }
 
@@ -70,17 +69,12 @@ export class JsonConfigProvider implements IConfigurationProvider {
     this.pipelineConfiguration = new PipelineConfiguration(pipelineType, pipelineId, projectId, projectName, envId, envDefId, usePrevEnvironment, teamUri, this.getAccessKey());
   }
 
-  private initMailConfiguration(smtpSecret: Secret): void {
+  private initMailConfiguration(smtpConfig: SmtpConfiguration): void {
     if (isNullOrUndefined(this.jsonRequest.EmailConfiguration)) {
       throw new Error("Invalid JSON Request. EmailConfiguration not provided.");
     }
-    const emailConfig = this.jsonRequest.PipelineInfo;
-    const smtpHost = "smtp.live.com";
-    const userName = smtpSecret.id;
-    const password = smtpSecret.value;
-    const enableSSLOnSmtpConnection = true;
 
-    const smtpConfig = new SmtpConfiguration(userName, password, smtpHost, enableSSLOnSmtpConnection);
+    const emailConfig = this.jsonRequest.EmailConfiguration[0];
 
     // Mail Subject
     const mailSubject = emailConfig.MailSubject;
@@ -119,7 +113,7 @@ export class JsonConfigProvider implements IConfigurationProvider {
 
     const groupTestSummaryBy: Array<GroupTestResultsBy> = new Array();
     if (groupTestSummaryByStr != null) {
-      groupTestSummaryByStr.split(",").forEach(element => { groupTestSummaryBy.push(this.getGroupTestResultsByEnumFromString(element)) });
+      groupTestSummaryByStr.split(",").forEach((element: string) => { groupTestSummaryBy.push(this.getGroupTestResultsByEnumFromString(element)) });
     }
 
     // derived input values
